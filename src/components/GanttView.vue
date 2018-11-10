@@ -1,5 +1,23 @@
 <template>
-  <div class="row">
+  <div id="gantt-view" class="row">
+    <div class="col-md-6 col-lg-8 offset-md-3 offset-lg-2 position-fixed" id="timeline-container">
+      <ol id="timeline">
+        <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
+        :key="key.time"
+        @click="selected_end_date=key.time">
+          <div class="timeline-info">
+            <p class="timeline-text">{{$moment(key.time).format(key['date_format'])}}</p>
+            <span class="timeline-arrow"></span>
+          </div>
+          
+          <span class="timeline-point">
+            <span class="timeline-mark"></span>
+
+          </span>
+        </li>
+      </ol>
+    </div>
+
     <form class="col-sm-12 col-md-3 col-lg-2">
       <div class="form-group">
         <label for="employee-selector">Selectionner un employe</label>
@@ -20,8 +38,7 @@
       </div>
     </form>
 
-    <div class="col-md-6 col-lg-8">
-      <p>{{$moment(selected_start_date).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+    <div id="tasks" class="col-md-6 col-lg-8">
       <div v-for="user in selected_user ? [selected_user] : users" :key="user.id">
         <div class="">
           <p>{{user.name}}</p>
@@ -41,10 +58,12 @@
     </div> 
 
       <div v-if="selected_task" class="col-sm-12 col-md-3 col-lg-2">
-        <p class="task-info-title">{{selected_task.title}}</p>
-        <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-        <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-        <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
+        <div class="selected-task">
+          <p class="task-info-title">{{selected_task.title}}</p>
+          <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+          <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+          <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
+        </div>
       </div>             
   </div>
   
@@ -94,8 +113,65 @@ export default {
       }
     },
     scaleToTask(task){
-      this.selected_start_date = task.date_start;
-      this.selected_end_date = task.date_end;
+      this.selected_start_date = this.$moment(task.date_start);
+      this.selected_end_date = this.$moment(task.date_end);
+    },
+    getTimelineKeys(){
+      var stamp_start = this.$moment(this.selected_start_date);
+      var stamp_end = this.$moment(this.selected_end_date);
+
+      var res = [
+        {
+          time: stamp_start,
+          date_format: 'D/M/YYYY, h:mm:ss a'
+        },
+        {
+          time: stamp_end,
+          date_format: 'D/M/YYYY, h:mm:ss a'
+        },
+      ];
+
+      var date_format = 'D/M/YYYY, h:mm:ss a';
+      var stamp_format = 'years';
+
+      if(stamp_end.diff(stamp_start, 'years')>=1){
+        stamp_format = 'years';
+        date_format = 'YYYY';
+      }else if(stamp_end.diff(stamp_start, 'month')>=1){
+        stamp_format = 'months';
+        date_format = 'MM/YYYY';
+      }else if(stamp_end.diff(stamp_start, 'weeks')<=1 && stamp_end.diff(stamp_start, 'days')>1){
+        stamp_format = 'days';
+        date_format = 'DD/MM';
+      }else if(stamp_end.diff(stamp_start, 'days')<=1){
+        stamp_format = 'hours';
+        date_format = 'HH:mm';
+      }else{
+        stamp_format = 'days';
+        date_format = 'DD/MM';
+      }
+
+      for(var i = 1; i < Math.ceil(stamp_end.diff(stamp_start, stamp_format)); i++){
+        var timeline = this.$moment(stamp_start);
+        timeline.minutes(0);
+        timeline.seconds(0);
+        timeline.milliseconds(0);
+        timeline.add(i, stamp_format);
+        res.push({
+          time: this.$moment(timeline),
+          date_format: date_format
+        });
+      }
+
+      return res;
+    },
+    getTimelineKeyMarginLeft(key){
+      var stamp_start = this.$moment(this.selected_start_date);
+      var stamp_end = this.$moment(this.selected_end_date);
+      var stamp = stamp_end - stamp_start;
+
+      var empty_stamp = key - stamp_start;
+      return stamp > 0? (empty_stamp / stamp) * 100 + '%' : '0%';
     }
   },
 }
@@ -106,5 +182,124 @@ export default {
   .user-tasks{
     margin-bottom: 50px;
   }
+
+  #gantt-view{
+    margin-top:150px;
+  }
+
+  #timeline-container{
+    top:50px;
+    padding: 20px;
+    background-color: white;
+    min-height: 50px;
+    z-index: 7;
+  }
+
+  #tasks{
+    margin-top: 50px;
+  }
+
+/* ---- Timeline ---- */
+#timeline {
+  margin-top: 75px;
+  margin-left: -5px;
+  margin-right: -5px;
+	position: relative;
+	display: block;
+	height: 4px;
+	background: #31708F;
+}
+
+#timeline::before,
+#timeline::after {
+	content: "";
+	position: absolute;
+	top: -8px;
+	display: block;
+	width: 0;
+	height: 0;
+  border-radius: 10px;
+	border: 10px solid #31708F;
+}
+
+#timeline::before {
+	left: -5px;
+}
+#timeline::after {
+	right: -10px;
+	border: 10px solid transparent;
+	border-right: 0;
+	border-left: 20px solid #31708F;
+  border-radius: 3px;
+}
+
+#timeline li{
+  position: absolute;
+	display: inline-block;
+  height: 50px;
+  cursor: pointer;
+}
+
+.timeline-info{
+  position: absolute;
+  top: -75px;
+  left: -80px;
+  width: 50px;
+  background-color: white;
+  padding: 5px;
+  z-index: 8;
+  border: solid 1px lightgray;
+  border-radius: 3px;
+  font-size: .75em;
+}
+
+.timeline-text {
+  color: #000000;
+  font-size: .75em;
+  text-align: center;  
+}
+
+.timeline-info:hover{
+  z-index: 9;
+}
+
+.timeline-point {
+	content: "";
+	top: -4px;
+	left: -45px;
+	display: block;
+	width: 6px;
+	height: 6px;
+	border: 4px solid #31708F;
+	border-radius: 10px;
+	background: #fff;
+  position: absolute;
+  padding: 0;
+}
+
+.timeline-mark{
+  position: absolute;
+  height: 1000px;
+  width: 0px;
+  overflow: visible;
+  border: solid 1px #00000010;
+  margin: 0%;
+}
+
+.timeline-arrow{
+  width: 0; 
+  height: 0;
+  position: absolute;
+  bottom: -5px;
+
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid lightgray;
+  margin-left: 50%;
+}
+
+.selected-task{
+}
+
 
 </style>

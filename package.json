@@ -15,7 +15,8 @@
     "moment": "^2.22.2",
     "popper.js": "^1.12.9",
     "vue": "^2.5.3",
-    "vue-moment": "^4.0.0"
+    "vue-moment": "^4.0.0",
+    "vue-session": "^1.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

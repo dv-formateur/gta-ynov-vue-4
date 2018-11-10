@@ -12,9 +12,9 @@
     - auto scale on task selection (by clicking on button)
 - Services initialized with fake data
 
-# Todo for 09-11-2018
+# Changelog 09-11-2018
 - Add time cursor on the gantt view
-- Login / logout
+- Init Login / logout system
 
 ## Build
 
