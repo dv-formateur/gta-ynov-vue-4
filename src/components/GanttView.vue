@@ -51,7 +51,7 @@
             :end_date="selected_end_date" 
             :key="task.id"
             @selectTask="selectTask"
-            v-if="$moment(task.date_start) <= $moment(selected_end_date) && $moment(task.date_end) >= $moment(selected_start_date)">
+            v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
             </component-task>
         </div>
       </div> 
