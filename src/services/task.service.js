@@ -5,7 +5,6 @@ export default class TaskService {
             new Task('task2', 'nom tache 2', 1, new Date('11-4-2018'), new Date('11-5-2018'), user.id),
             new Task('task3', 'nom tache 3', 2, new Date('11-8-2018'), new Date('11-15-2018'), user.id),
             new Task('task4', 'nom tache 4', 3, new Date('11-2-2018'), new Date('11-10-2018'), user.id)];
-            console.log(user);
-            callback(user, res);
+        callback(user, res);
     }
 }

@@ -3,7 +3,7 @@
     <div class="col-md-6 col-lg-8 offset-md-3 offset-lg-2 position-fixed" id="timeline-container">
       <ol id="timeline">
         <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
-        :key="key.time"
+        :key="key.time.toDate().getTime()"
         @click="selected_end_date=key.time">
           <div class="timeline-info">
             <p class="timeline-text">{{$moment(key.time).format(key['date_format'])}}</p>
@@ -50,7 +50,9 @@
             :start_date="selected_start_date" 
             :end_date="selected_end_date" 
             :key="task.id"
-            @selectTask="selectTask"></component-task>
+            @selectTask="selectTask"
+            v-if="$moment(task.date_start) <= $moment(selected_end_date) && $moment(task.date_end) >= $moment(selected_start_date)">
+            </component-task>
         </div>
       </div> 
 
@@ -97,7 +99,6 @@ export default {
   methods: {
     setUsers(users){
       this.users = users;
-      console.log(users);
       this.onSelectUser();
     },
     setTasks(user, tasklist){
@@ -113,8 +114,11 @@ export default {
       }
     },
     scaleToTask(task){
-      this.selected_start_date = this.$moment(task.date_start);
-      this.selected_end_date = this.$moment(task.date_end);
+      this.scaleOn(task.date_start, task.date_end);
+    },
+    scaleOn(start, end){
+      this.selected_start_date = this.$moment(start);
+      this.selected_end_date = this.$moment(end);
     },
     getTimelineKeys(){
       var stamp_start = this.$moment(this.selected_start_date);
