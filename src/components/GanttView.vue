@@ -1,23 +1,5 @@
 <template>
   <div id="gantt-view" class="row">
-    <div class="col-md-6 col-lg-8 offset-md-3 offset-lg-2 position-fixed" id="timeline-container">
-      <ol id="timeline">
-        <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
-        :key="key.time.toDate().getTime()"
-        @click="selected_end_date=key.time">
-          <div class="timeline-info">
-            <p class="timeline-text">{{$moment(key.time).format(key['date_format'])}}</p>
-            <span class="timeline-arrow"></span>
-          </div>
-          
-          <span class="timeline-point">
-            <span class="timeline-mark"></span>
-
-          </span>
-        </li>
-      </ol>
-    </div>
-
     <form class="col-sm-12 col-md-3 col-lg-2">
       <div class="form-group">
         <label for="employee-selector">Selectionner un employe</label>
@@ -38,24 +20,44 @@
       </div>
     </form>
 
-    <div id="tasks" class="col-md-6 col-lg-8">
-      <div v-for="user in selected_user ? [selected_user] : users" :key="user.id">
-        <div class="">
-          <p>{{user.name}}</p>
-        </div>
-        <div class="user-tasks">
-          <component-task 
-            v-for="task in user.tasklist" 
-            :task="task" 
-            :start_date="selected_start_date" 
-            :end_date="selected_end_date" 
-            :key="task.id"
-            @selectTask="selectTask"
-            v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
-            </component-task>
-        </div>
-      </div> 
+    <div class="col-md-6 col-lg-8">
+      <div>
+        <ol id="timeline">
+          <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
+          :key="key.time.toDate().getTime()"
+          @click="selected_end_date=key.time">
+            <div class="timeline-info">
+              <p class="timeline-text">{{$moment(key.time).format(key['date_format'])}}</p>
+              <span class="timeline-arrow"></span>
+            </div>
+            
+            <span class="timeline-point">
+              <span class="timeline-mark"></span>
 
+            </span>
+          </li>
+        </ol>
+      </div>
+
+
+      <div id="tasks">
+        <div v-for="user in selected_user ? [selected_user] : users" :key="user.id">
+          <div>
+            <p>{{user.name}}</p>
+          </div>
+          <div class="user-tasks">
+            <component-task 
+              v-for="task in user.tasklist" 
+              :task="task" 
+              :start_date="selected_start_date" 
+              :end_date="selected_end_date" 
+              :key="task.id"
+              @selectTask="selectTask"
+              v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
+              </component-task>
+          </div>
+        </div> 
+      </div>
        
     </div> 
 
@@ -188,7 +190,7 @@ export default {
   }
 
   #gantt-view{
-    margin-top:150px;
+    margin-top:100px;
   }
 
   #timeline-container{
@@ -200,16 +202,15 @@ export default {
   }
 
   #tasks{
-    margin-top: 50px;
+    max-height: 300px;
   }
 
 /* ---- Timeline ---- */
 #timeline {
-  margin-top: 75px;
-  margin-left: -5px;
-  margin-right: -5px;
+  margin-top: 100px;
 	position: relative;
 	display: block;
+  width: 100%;
 	height: 4px;
 	background: #31708F;
 }
@@ -282,12 +283,12 @@ export default {
 }
 
 .timeline-mark{
-  position: absolute;
-  height: 1000px;
+  height: 100%;
   width: 0px;
   overflow: visible;
   border: solid 1px #00000010;
   margin: 0%;
+  position: fixed;
 }
 
 .timeline-arrow{
