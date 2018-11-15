@@ -1,50 +1,77 @@
 <template>
   <div id="gantt-view" class="row">
-    <form class="col-sm-12 col-md-3 col-lg-2">
-      <div class="form-group">
-        <label for="employee-selector">Selectionner un employe</label>
-        <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
-          <option value="">Tous ({{users.length}})</option>
-          <option v-for="user in users" v-bind:value="user" v-bind:key="user.id">{{user.name}}</option>
-        </select>
+    <div class="col-sm-12 col-md-4 col-lg-2">
+      <form>
+        <div class="form-group">
+          <label for="employee-selector">Selectionner un projet</label>
+          <select @change="onSelectProject()" class="form-control" name="project-selector" id="project-selector" v-model="selected_project">
+            <option v-for="project in user_projects" v-bind:value="project" v-bind:key="project.id">{{project.name}}</option>
+          </select>
+        </div>
+
+        <div id='manager-filter'>
+          <div class="form-group">
+            <label for="employee-selector">Selectionner un employe</label>
+            <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
+              <option value="">Tous</option>
+              <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.name}}</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="form-group">
+          <label for="start-date-selector">Selectionner une date de debut</label>
+          <input type="date" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"/>
+        </div>
+
+        <div class="form-group">
+          <label for="end-date-selector">Selectionner une date de fin</label>
+          <input type="date" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"/>
+        </div>
+      </form>
+
+      <hr>
+
+      <div v-if="selected_task">
+        <div class="selected-task">
+          <p class="task-info-title">{{selected_task.title}}</p>
+          <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+          <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+          <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="start-date-selector">Selectionner une date de debut</label>
-        <input type="date" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"/>
-      </div>
+    </div>
+    
 
-      <div class="form-group">
-        <label for="end-date-selector">Selectionner une date de fin</label>
-        <input type="date" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"/>
-      </div>
-    </form>
-
-    <div class="col-md-6 col-lg-8">
-      <div>
+    <div class="col-sm-10 col-md-6 col-lg-8 offset-1">
+      <div id="tasks">
+        <div>
         <ol id="timeline">
+          <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
+            <span class="timeline-point current-timeline">
+            </span>
+          </li>
           <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
-          :key="key.time.toDate().getTime()"
-          @click="selected_end_date=key.time">
-            <div class="timeline-info">
+          :key="key.time.toDate().getTime()">
+            <div class="timeline-info" 
+              @click="selected_end_date=key.time">
               <p class="timeline-text">{{$moment(key.time).format(key['date_format'])}}</p>
-              <span class="timeline-arrow"></span>
             </div>
             
             <span class="timeline-point">
-              <span class="timeline-mark"></span>
-
             </span>
           </li>
         </ol>
       </div>
 
 
-      <div id="tasks">
-        <div v-for="user in selected_user ? [selected_user] : users" :key="user.id">
+        <div v-for="user in getSelectedUsers()" :key="user.id">
           <div>
             <p>{{user.name}}</p>
           </div>
+
           <div class="user-tasks">
             <component-task 
               v-for="task in user.tasklist" 
@@ -58,17 +85,7 @@
           </div>
         </div> 
       </div>
-       
-    </div> 
-
-      <div v-if="selected_task" class="col-sm-12 col-md-3 col-lg-2">
-        <div class="selected-task">
-          <p class="task-info-title">{{selected_task.title}}</p>
-          <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-          <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-          <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
-        </div>
-      </div>             
+    </div>              
   </div>
   
 </template>
@@ -76,10 +93,13 @@
 <script>
 import Task from '../entities/task.js'
 import User from '../entities/user.js'
+import Project from '../entities/project.js'
+
 import ComponentTask from '../components/ComponentTask.vue'
 
 import UserService from '../services/user.service'
 import TaskService from '../services/task.service'
+import ProjectService from '../services/project.service'
 
 export default {
   name: 'gantt-view',
@@ -88,31 +108,55 @@ export default {
   },
   data () {
     return {
-      users: [],
+      user_projects: [],
       selected_user: '',
-      selected_start_date: this.$moment(),
-      selected_end_date: this.$moment().add(1, 'days'),
+      selected_project: '',
+      selected_start_date:  this.$moment().startOf('month'),
+      selected_end_date: this.$moment().endOf('month'),
       selected_task: null
     }
   },
   mounted() {
-     UserService.getAllUsers(this.setUsers, 10);
+    ProjectService.getUserProjects(this.setProjects, this.$session.get('user'));
   },
   methods: {
-    setUsers(users){
-      this.users = users;
+    selectTask(task){
+      this.selected_task = task;
+    },
+    getSelectedProjects(){
+      return this.selected_project;
+    },
+    getSelectedUsers(){
+
+      return !this.selected_project ? [] : this.selected_user ? [this.selected_user] : this.selected_project ? this.selected_project.users : [];
+    },
+
+    setProjects(user, projects){
+      this.user_projects = projects;
+      this.selected_project = this.user_projects ? this.user_projects[0] : '';
+      this.onSelectProject();
+    },
+    setUsers(project, users){
+      project.users = users;
       this.onSelectUser();
     },
     setTasks(user, tasklist){
       user.tasklist = tasklist;
     },
-    selectTask(task){
-      this.selected_task = task;
+
+
+    onSelectProject(){
+      if(!this.selected_project) return;
+      this.selected_user = '';
+      UserService.getUsersOnProject(this.setUsers, this.selected_project);
+      
     },
     onSelectUser(){
-      var selected = this.selected_user ? [this.selected_user] : this.users;
-      for(var user of selected){
-        TaskService.getAllTasksForUser(this.setTasks, null, user, this.selected_start_date, this.selected_end_date);
+      this.refreshTasksForSelection();
+    },
+    refreshTasksForSelection(){
+      for(var user of this.getSelectedUsers()){
+        TaskService.getAllTasksForUser(this.setTasks, null, user, this.selected_project, this.selected_start_date, this.selected_end_date);
       }
     },
     scaleToTask(task){
@@ -126,17 +170,6 @@ export default {
       var stamp_start = this.$moment(this.selected_start_date);
       var stamp_end = this.$moment(this.selected_end_date);
 
-      var res = [
-        {
-          time: stamp_start,
-          date_format: 'D/M/YYYY, h:mm:ss a'
-        },
-        {
-          time: stamp_end,
-          date_format: 'D/M/YYYY, h:mm:ss a'
-        },
-      ];
-
       var date_format = 'D/M/YYYY, h:mm:ss a';
       var stamp_format = 'years';
 
@@ -146,18 +179,32 @@ export default {
       }else if(stamp_end.diff(stamp_start, 'month')>=1){
         stamp_format = 'months';
         date_format = 'MM/YYYY';
-      }else if(stamp_end.diff(stamp_start, 'weeks')<=1 && stamp_end.diff(stamp_start, 'days')>1){
+      }else if(stamp_end.diff(stamp_start, 'weeks')>1){
+        stamp_format = 'weeks';
+        date_format = 'DD/MM';
+      }else if(stamp_end.diff(stamp_start, 'days')>1){
         stamp_format = 'days';
         date_format = 'DD/MM';
-      }else if(stamp_end.diff(stamp_start, 'days')<=1){
+      }else if(stamp_end.diff(stamp_start, 'hours')<6){
         stamp_format = 'hours';
         date_format = 'HH:mm';
       }else{
-        stamp_format = 'days';
-        date_format = 'DD/MM';
+        stamp_format = 'hours';
+        date_format = 'HH:mm';
       }
 
-      for(var i = 1; i < Math.ceil(stamp_end.diff(stamp_start, stamp_format)); i++){
+      var res = [
+        {
+          time: stamp_start,
+          date_format: date_format
+        },
+        {
+          time: stamp_end,
+          date_format: date_format
+        },
+      ];
+
+      for(var i = 1; i < stamp_end.diff(stamp_start, stamp_format, true); i++){
         var timeline = this.$moment(stamp_start);
         timeline.minutes(0);
         timeline.seconds(0);
@@ -190,7 +237,6 @@ export default {
   }
 
   #gantt-view{
-    margin-top:100px;
   }
 
   #timeline-container{
@@ -247,21 +293,21 @@ export default {
 
 .timeline-info{
   position: absolute;
-  top: -75px;
+  top: -50px;
   left: -80px;
   width: 50px;
-  background-color: white;
   padding: 5px;
   z-index: 8;
-  border: solid 1px lightgray;
   border-radius: 3px;
-  font-size: .75em;
 }
 
 .timeline-text {
   color: #000000;
   font-size: .75em;
-  text-align: center;  
+  font-weight: bold;
+  text-align: center;
+  transform: rotate(315deg);
+  margin-left: 50%;
 }
 
 .timeline-info:hover{
@@ -270,7 +316,7 @@ export default {
 
 .timeline-point {
 	content: "";
-	top: -4px;
+	top: -2px;
 	left: -45px;
 	display: block;
 	width: 6px;
@@ -296,11 +342,14 @@ export default {
   height: 0;
   position: absolute;
   bottom: -5px;
-
+  margin-left: 50%;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 5px solid lightgray;
-  margin-left: 50%;
+}
+
+.current-timeline{
+  border-color: red;
 }
 
 .selected-task{

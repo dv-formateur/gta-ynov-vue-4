@@ -1,6 +1,6 @@
 <template>
-<div>
-  <b-navbar id="app-menu" class="position-fixed col" toggleable="md" type="dark" variant="info">
+<div id="navbar" class="row">
+  <b-navbar class="col" toggleable="md" type="dark" variant="info">
 
   <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 
@@ -9,7 +9,11 @@
   <b-collapse is-nav id="nav_collapse">
 
     <b-navbar-nav>
-      <b-nav-item href="#">Link</b-nav-item>
+      <b-nav-item @click="changePage('home')" v-bind:disabled="this.current_page=='home'" href="#">Accueil</b-nav-item>
+
+      <div v-if="$session.get('user')">
+        <b-nav-item @click="changePage('gantt')" v-bind:disabled="this.current_page=='gantt'" href="#">Gantt</b-nav-item>
+      </div>
     </b-navbar-nav>
 
     <!-- Right aligned nav items -->
@@ -19,7 +23,7 @@
         <template slot="button-content">
           <em>{{$session.get('user').name}}</em>
         </template>
-        <b-dropdown-item href="#">Profile</b-dropdown-item>
+        <b-dropdown-item @click="changePage('profile')" href="#">Profile</b-dropdown-item>
         <b-dropdown-item href="#" @click="logout()">Déconnexion</b-dropdown-item>
       </b-nav-item-dropdown>
 
@@ -54,6 +58,7 @@ import UserService from '../services/user.service'
 
 export default {
   name: "nav-bar",
+  props: ['current_page'],
   components: {
   },
   data() {
@@ -81,16 +86,17 @@ export default {
     },
     showLogin(){
       this.$refs.loginPopin.show();
+    },
+    changePage(page){
+      this.$emit('changePage', page);
     }
   }
 };
 </script>
 
 <style>
-#app-menu {
-  z-index: 10;
-  left: 0;
-  top: 0;
+#navbar {
+  margin-bottom: 25px;
 }
 </style>
 

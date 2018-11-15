@@ -5,6 +5,19 @@
 # Test url
 > https://raphaelcharre.github.io/gta-ynov-vue/
 
+# Planning 16-11-2018
+- Add rounting
+
+# Changelog 15-11-2018
+- Add project logic
+- Change timeline appearence
+- Fix some responsivity issues
+- Starting home page
+
+# Changelog 09-11-2018
+- Add time cursor on the gantt view
+- Init Login / logout system
+
 # Changelog 08-11-2018
 - Project Initialization
 - Add decorative navbar
@@ -14,10 +27,6 @@
     - date selection and task scale size
     - auto scale on task selection (by clicking on button)
 - Services initialized with fake data
-
-# Changelog 09-11-2018
-- Add time cursor on the gantt view
-- Init Login / logout system
 
 ## Build
 

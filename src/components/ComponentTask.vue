@@ -3,6 +3,7 @@
         <div :style="{'width': this.getWidth(), 'margin-left': this.getMarginLeft()}" 
                 class="task" :class="getTaskTypeClassByTypeId(task.type)"
                 @click="$emit('selectTask', task)">
+                {{task.name}}
                 <p class="task-title">{{task.title}}</p>
         </div>
     </div>
@@ -19,6 +20,8 @@ export default {
   data() {
     return {};
   },
+  mounted(){
+  },
   methods: {
     getWidth() {
       var stamp_start = this.$moment(this.start_date);
@@ -31,11 +34,6 @@ export default {
 
       var stamp_len = stamp_end.diff(stamp_start);
       var task_len = task_end.diff(task_start);
-      console.log('task: ' + task_start.format());
-      console.log('to: ' + task_end.format());
-      console.log('stamp: ' + stamp_len);
-      console.log('task laps: ' + task_len);
-      console.log(task_len / stamp_len * 100 + "%");
       return task_len / stamp_len * 100 + "%";
     },
     getMarginLeft() {
