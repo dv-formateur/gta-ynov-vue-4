@@ -77,7 +77,8 @@
               v-for="task in user.tasklist" 
               :task="task" 
               :start_date="selected_start_date" 
-              :end_date="selected_end_date" 
+              :end_date="selected_end_date"
+              :selected="selected_task? task.id == selected_task.id ? true : false : false" 
               :key="task.id"
               @selectTask="selectTask"
               v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">

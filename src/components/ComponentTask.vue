@@ -1,7 +1,7 @@
 <template>
     <div class="task-row">
         <div :style="{'width': this.getWidth(), 'margin-left': this.getMarginLeft()}" 
-                class="task" :class="getTaskTypeClassByTypeId(task.type)"
+                class="task" :class="[getTaskTypeClassByTypeId(task.type), selected ? 'selected': '']"
                 @click="$emit('selectTask', task)">
                 {{task.name}}
                 <p class="task-title">{{task.title}}</p>
@@ -16,7 +16,7 @@ import Task from "../entities/task.js";
 
 export default {
   name: "component-task",
-  props: ["task", "start_date", "end_date"],
+  props: ["task", "start_date", "end_date", 'selected'],
   data() {
     return {};
   },
@@ -88,7 +88,7 @@ export default {
   transition: 0.5s;
 }
 
-.task:hover {
+.task:hover , .selected{
   border-width: 2px !important;
 }
 
