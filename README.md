@@ -5,8 +5,9 @@
 # Test url
 > https://raphaelcharre.github.io/gta-ynov-vue/
 
-# Planning 16-11-2018
+# Changelog 16-11-2018
 - Add rounting
+- Better home page
 
 # Changelog 15-11-2018
 - Add project logic

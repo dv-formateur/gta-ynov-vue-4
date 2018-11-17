@@ -4,17 +4,24 @@
 
   <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 
-  <b-navbar-brand href="#">Ynov Time Management</b-navbar-brand>
+  <b-navbar-brand>Ynov Time Management</b-navbar-brand>
 
   <b-collapse is-nav id="nav_collapse">
 
     <b-navbar-nav>
-      <b-nav-item @click="changePage('home')" v-bind:disabled="this.current_page=='home'" href="#">Accueil</b-nav-item>
+      <b-nav-item><router-link class="nav-link" to="/">Accueil</router-link></b-nav-item>
 
       <div v-if="$session.get('user')">
-        <b-nav-item @click="changePage('gantt')" v-bind:disabled="this.current_page=='gantt'" href="#">Gantt</b-nav-item>
+        <b-nav-item><router-link class="nav-link" to="/gantt">Gantt</router-link></b-nav-item>
       </div>
     </b-navbar-nav>
+
+
+    <b-nav-form>
+      <b-form-input size="sm" class="mr-sm-2" type="text" placeholder="Chercher un utilisateur"/>
+      <b-button variant="light" size="sm" class="my-2 my-sm-0">Recherche</b-button>
+    </b-nav-form>
+
 
     <!-- Right aligned nav items -->
     <b-navbar-nav class="ml-auto">
@@ -23,13 +30,13 @@
         <template slot="button-content">
           <em>{{$session.get('user').name}}</em>
         </template>
-        <b-dropdown-item @click="changePage('profile')" href="#">Profile</b-dropdown-item>
-        <b-dropdown-item href="#" @click="logout()">Déconnexion</b-dropdown-item>
+        <b-dropdown-item @click="$router.push('/profile/' + $session.get('user').id)">Profile</b-dropdown-item>
+        <b-dropdown-item @click="logout()">Déconnexion</b-dropdown-item>
       </b-nav-item-dropdown>
 
       <b-nav-form right v-else>
         <div>
-          <b-btn block size="sm" class="my-2 my-sm-0 btn" @click="showLogin()">Connexion</b-btn>
+          <b-btn variant="light" block size="sm" class="my-2 my-sm-0 btn" @click="showLogin()">Connexion</b-btn>
         </div>
       </b-nav-form>
     </b-navbar-nav>
@@ -76,19 +83,16 @@ export default {
     login(user){
       this.$session.set('user', user);
       this.$refs.loginPopin.hide();
-      this.$parent.$forceUpdate();
-      this.$forceUpdate();
+      this.$router.push('/');
+      this.$router.go('/');
     },
     logout(){
       this.$session.destroy();
-      this.$parent.$forceUpdate();
-      this.$forceUpdate();
+      this.$router.push('/');
+      this.$router.go('/');
     },
     showLogin(){
       this.$refs.loginPopin.show();
-    },
-    changePage(page){
-      this.$emit('changePage', page);
     }
   }
 };
@@ -98,6 +102,16 @@ export default {
 #navbar {
   margin-bottom: 25px;
 }
+
+#navbar .nav-item .nav-link a a{
+  color: white;
+}
+
+#navbar .nav-item .nav-link a a:hover{
+  color: lightgray;
+  text-decoration: none;
+}
+
 </style>
 
 

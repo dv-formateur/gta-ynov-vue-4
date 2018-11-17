@@ -1,94 +1,98 @@
 <template>
-  <div id="gantt-view" class="row">
-    <div class="col-sm-12 col-md-4 col-lg-2">
-      <form>
-        <div class="form-group">
-          <label for="employee-selector">Selectionner un projet</label>
-          <select @change="onSelectProject()" class="form-control" name="project-selector" id="project-selector" v-model="selected_project">
-            <option v-for="project in user_projects" v-bind:value="project" v-bind:key="project.id">{{project.name}}</option>
-          </select>
-        </div>
+  <div class="container-fluid">
+    <nav-bar></nav-bar>
 
-        <div id='manager-filter'>
+    <div class="row">
+      <div class="col-sm-12 col-md-4 col-lg-2">
+        <form>
           <div class="form-group">
-            <label for="employee-selector">Selectionner un employe</label>
-            <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
-              <option value="">Tous</option>
-              <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.name}}</option>
+            <label for="employee-selector">Selectionner un projet</label>
+            <select @change="onSelectProject()" class="form-control" name="project-selector" id="project-selector" v-model="selected_project">
+              <option v-for="project in user_projects" v-bind:value="project" v-bind:key="project.id">{{project.name}}</option>
             </select>
           </div>
 
-        </div>
-
-        <div class="form-group">
-          <label for="start-date-selector">Selectionner une date de debut</label>
-          <input type="date" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"/>
-        </div>
-
-        <div class="form-group">
-          <label for="end-date-selector">Selectionner une date de fin</label>
-          <input type="date" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"/>
-        </div>
-      </form>
-
-      <hr>
-
-      <div v-if="selected_task">
-        <div class="selected-task">
-          <p class="task-info-title">{{selected_task.title}}</p>
-          <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-          <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-          <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
-        </div>
-      </div>
-
-    </div>
-    
-
-    <div class="col-sm-10 col-md-6 col-lg-8 offset-1">
-      <div id="tasks">
-        <div>
-        <ol id="timeline">
-          <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
-            <span class="timeline-point current-timeline">
-            </span>
-          </li>
-          <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
-          :key="key.time.toDate().getTime()">
-            <div class="timeline-info" 
-              @click="selected_end_date=key.time">
-              <p class="timeline-text">{{$moment(key.time).format(key['date_format'])}}</p>
+          <div id='manager-filter'>
+            <div class="form-group">
+              <label for="employee-selector">Selectionner un employe</label>
+              <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
+                <option value="">Tous</option>
+                <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.name}}</option>
+              </select>
             </div>
-            
-            <span class="timeline-point">
-            </span>
-          </li>
-        </ol>
+
+          </div>
+
+          <div class="form-group">
+            <label for="start-date-selector">Selectionner une date de debut</label>
+            <input type="date" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"/>
+          </div>
+
+          <div class="form-group">
+            <label for="end-date-selector">Selectionner une date de fin</label>
+            <input type="date" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"/>
+          </div>
+        </form>
+
+        <hr>
+
+        <div v-if="selected_task">
+          <div class="selected-task">
+            <p class="task-info-title">{{selected_task.title}}</p>
+            <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+            <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
+            <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
+          </div>
+        </div>
+
       </div>
+      
 
-
-        <div v-for="user in getSelectedUsers()" :key="user.id">
+      <div class="col-sm-10 col-md-6 col-lg-8 offset-1">
+        <div id="tasks">
           <div>
-            <p>{{user.name}}</p>
-          </div>
+          <ol id="timeline">
+            <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
+              <span class="timeline-point current-timeline">
+              </span>
+            </li>
+            <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
+            :key="key.time.toDate().getTime()">
+              <div class="timeline-info" 
+                @click="selected_end_date=key.time">
+                <p class="timeline-text">{{$moment(key.time).format(date_format)}}</p>
+              </div>
+              
+              <span class="timeline-point">
+              </span>
+            </li>
+          </ol>
+        </div>
 
-          <div class="user-tasks">
-            <component-task 
-              v-for="task in user.tasklist" 
-              :task="task" 
-              :start_date="selected_start_date" 
-              :end_date="selected_end_date"
-              :selected="selected_task? task.id == selected_task.id ? true : false : false" 
-              :key="task.id"
-              @selectTask="selectTask"
-              v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
-              </component-task>
-          </div>
-        </div> 
-      </div>
-    </div>              
+
+          <div v-for="user in getSelectedUsers()" :key="user.id">
+            <div>
+              <p>{{user.name}}</p>
+            </div>
+
+            <div class="user-tasks">
+              <component-task 
+                v-for="task in user.tasklist" 
+                :task="task" 
+                :start_date="selected_start_date" 
+                :end_date="selected_end_date"
+                :selected="selected_task? task.id == selected_task.id ? true : false : false"
+                :date_format="date_format"
+                :key="task.id"
+                @selectTask="selectTask"
+                v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
+                </component-task>
+            </div>
+          </div> 
+        </div>
+      </div>              
+    </div>
   </div>
-  
 </template>
 
 <script>
@@ -96,6 +100,7 @@ import Task from '../entities/task.js'
 import User from '../entities/user.js'
 import Project from '../entities/project.js'
 
+import NavBar from "../layout/NavBar.vue";
 import ComponentTask from '../components/ComponentTask.vue'
 
 import UserService from '../services/user.service'
@@ -105,7 +110,7 @@ import ProjectService from '../services/project.service'
 export default {
   name: 'gantt-view',
   components: {
-    ComponentTask
+    NavBar, ComponentTask
   },
   data () {
     return {
@@ -114,7 +119,9 @@ export default {
       selected_project: '',
       selected_start_date:  this.$moment().startOf('month'),
       selected_end_date: this.$moment().endOf('month'),
-      selected_task: null
+      selected_task: null,
+
+      date_format: 'DD/MM'
     }
   },
   mounted() {
@@ -196,12 +203,10 @@ export default {
 
       var res = [
         {
-          time: stamp_start,
-          date_format: date_format
+          time: stamp_start
         },
         {
-          time: stamp_end,
-          date_format: date_format
+          time: stamp_end
         },
       ];
 
@@ -212,11 +217,11 @@ export default {
         timeline.milliseconds(0);
         timeline.add(i, stamp_format);
         res.push({
-          time: this.$moment(timeline),
-          date_format: date_format
+          time: this.$moment(timeline)
         });
       }
 
+      this.date_format = date_format;
       return res;
     },
     getTimelineKeyMarginLeft(key){
@@ -299,7 +304,6 @@ export default {
   width: 50px;
   padding: 5px;
   z-index: 8;
-  border-radius: 3px;
 }
 
 .timeline-text {
@@ -327,15 +331,6 @@ export default {
 	background: #fff;
   position: absolute;
   padding: 0;
-}
-
-.timeline-mark{
-  height: 100%;
-  width: 0px;
-  overflow: visible;
-  border: solid 1px #00000010;
-  margin: 0%;
-  position: fixed;
 }
 
 .timeline-arrow{

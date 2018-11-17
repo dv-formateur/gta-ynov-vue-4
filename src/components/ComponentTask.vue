@@ -3,8 +3,13 @@
         <div :style="{'width': this.getWidth(), 'margin-left': this.getMarginLeft()}" 
                 class="task" :class="[getTaskTypeClassByTypeId(task.type), selected ? 'selected': '']"
                 @click="$emit('selectTask', task)">
-                {{task.name}}
-                <p class="task-title">{{task.title}}</p>
+                <div class="task-info">
+                  <div class="task-date-info inline-block">
+                    <div class="">{{start_date.format(date_format)}}</div>
+                    <div class="">{{end_date.format(date_format)}}</div>
+                  </div>
+                  <p class="inline-block task-title">{{task.title}}</p>
+                </div>
         </div>
     </div>
     
@@ -16,7 +21,9 @@ import Task from "../entities/task.js";
 
 export default {
   name: "component-task",
-  props: ["task", "start_date", "end_date", 'selected'],
+  props: ["task", "start_date", "end_date", 'date_format', 'selected'],
+  components: {
+  },
   data() {
     return {};
   },
@@ -81,21 +88,32 @@ export default {
 .task {
   cursor: pointer;
   min-width: 10px;
-  min-height: 20px;
+
+
 
   transition-timing-function: ease;
   transition-property: transform;
   transition: 0.5s;
 }
 
+.task-info{
+  display: inline-block;
+  padding: 5px 10px;
+  background-color: rgba(255, 255, 255, .90);
+  border-radius: 0px 15px 15px 0px;
+}
+
 .task:hover , .selected{
   border-width: 2px !important;
 }
 
+.task-date-info{
+  border-right: solid 1px lightgray;
+  margin-right: 10px;
+  padding: 0px 10px;
+}
+
 .task-title {
-  text-align: center;
-  padding: 0;
-  margin: 0;
 }
 
 .default-task {
