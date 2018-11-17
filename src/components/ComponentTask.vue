@@ -65,6 +65,7 @@ export default {
       var current = this.$moment();
       var res = 0;
 
+      task_start = task_start < stamp_start ? stamp_start : task_start;
       task_end = current >= task_end ? current : task_end >= stamp_end ? stamp_end : task_end;
       if(current >= task_start){
         if(current >= task_end){
