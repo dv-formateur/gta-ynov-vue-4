@@ -12,7 +12,7 @@
             </select>
           </div>
 
-          <div id='manager-filter'>
+          <div v-if="show_select_user" id='manager-filter'>
             <div class="form-group">
               <label for="employee-selector">Selectionner un employe</label>
               <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
@@ -20,73 +20,81 @@
                 <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.name}}</option>
               </select>
             </div>
-
           </div>
 
           <div class="form-group">
             <label for="start-date-selector">Selectionner une date de debut</label>
-            <input type="date" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"/>
+            <date-picker :config="date_picker_options" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"></date-picker>
           </div>
 
           <div class="form-group">
             <label for="end-date-selector">Selectionner une date de fin</label>
-            <input type="date" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"/>
+            <date-picker :config="date_picker_options" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"></date-picker>
           </div>
         </form>
 
         <hr>
 
-        <div v-if="selected_task">
+        <b-card 
+          bg-variant="light"
+          text-variant="black"
+          :header="selected_task.title"
+          v-if="selected_task">
           <div class="selected-task">
-            <p class="task-info-title">{{selected_task.title}}</p>
-            <p class="task-info-date-start">{{$moment(selected_task.date_start).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-            <p class="task-info-date-end">{{$moment(selected_task.date_end).format("dddd, MMMM Do YYYY, h:mm:ss a")}}</p>
-            <button class="btn btn-info" @click="scaleToTask(selected_task)">Mettre a l'echelle</button>
+            <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
+            <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
+            <b-button variant="info" @click="scaleToTask(selected_task)">Mettre a l'echelle</b-button>
           </div>
-        </div>
+        </b-card>
 
       </div>
       
 
-      <div class="col-sm-10 col-md-6 col-lg-8 offset-1">
-        <div id="tasks">
-          <div>
-          <ol id="timeline">
-            <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
-              <span class="timeline-point current-timeline">
-              </span>
-            </li>
-            <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
-            :key="key.time.toDate().getTime()">
-              <div class="timeline-info" 
-                @click="selected_end_date=key.time">
-                <p class="timeline-text">{{$moment(key.time).format(date_format)}}</p>
-              </div>
-              
-              <span class="timeline-point">
-              </span>
-            </li>
-          </ol>
-        </div>
+      <div class="col">
+        <div id="tasks" class="container-fluid">
+          <div class="col-10 offset-2">
+            <ol id="timeline">
+              <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
+                <span class="timeline-point current-timeline">
+                </span>
+              </li>
+              <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
+              :key="key.time.toDate().getTime()">
+                <div class="timeline-info" 
+                  @click="selected_end_date=key.time">
+                  <p class="timeline-text">{{$moment(key.time).format(date_format)}}</p>
+                </div>
+                <span class="timeline-point">
+                </span>
+              </li>
+            </ol>
+          </div>
 
+          <div class="container-fluid user-tasks" v-for="user in getSelectedUsers()" :key="user.id">
+            <p class="task-username">{{user.name}}</p>
+            <div 
+              v-for="task in user.tasklist" 
+              :key="task.id" class="row task-row" 
+              v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
+                <div class="task-info col-2">
+                  <p class="task-title">{{task.title}}</p>
+                  <div class="task-date-info">
+                    <p class="date_start">{{$moment(task.date_start).format('HH:mm DD/MM/YY')}}</p>
+                    <p class="date_end">{{$moment(task.date_end).format('HH:mm DD/MM/YY')}}</p>
+                  </div>
+                </div>
 
-          <div v-for="user in getSelectedUsers()" :key="user.id">
-            <div>
-              <p>{{user.name}}</p>
-            </div>
+                <component-task
+                  class="col-10"
+                  :task="task" 
+                  :start_date="selected_start_date" 
+                  :end_date="selected_end_date"
+                  :selected="selected_task? task.id == selected_task.id ? true : false : false"
+                  :date_format="date_format"
 
-            <div class="user-tasks">
-              <component-task 
-                v-for="task in user.tasklist" 
-                :task="task" 
-                :start_date="selected_start_date" 
-                :end_date="selected_end_date"
-                :selected="selected_task? task.id == selected_task.id ? true : false : false"
-                :date_format="date_format"
-                :key="task.id"
-                @selectTask="selectTask"
-                v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
+                  @selectTask="selectTask">
                 </component-task>
+         
             </div>
           </div> 
         </div>
@@ -102,6 +110,7 @@ import Project from '../entities/project.js'
 
 import NavBar from "../layout/NavBar.vue";
 import ComponentTask from '../components/ComponentTask.vue'
+import DatePicker from 'vue-bootstrap-datetimepicker';
 
 import UserService from '../services/user.service'
 import TaskService from '../services/task.service'
@@ -121,7 +130,13 @@ export default {
       selected_end_date: this.$moment().endOf('month'),
       selected_task: null,
 
-      date_format: 'DD/MM'
+      show_select_user: false,
+
+      date_format: 'DD/MM',
+      date_picker_options: {
+        format: 'DD MMM YYYY HH:mm',
+        useCurrent: true,
+      }
     }
   },
   mounted() {
@@ -155,9 +170,9 @@ export default {
 
     onSelectProject(){
       if(!this.selected_project) return;
-      this.selected_user = '';
-      UserService.getUsersOnProject(this.setUsers, this.selected_project);
-      
+      this.show_select_user = this.selected_project && this.selected_project.project_users.filter((e)=>{return e.user_id == this.$session.get('user').id && e.role <=1}).length > 0
+      this.selected_user = this.show_select_user ? '' : this.$session.get('user');
+      UserService.getUsersOnProject(this.setUsers, this.selected_project);  
     },
     onSelectUser(){
       this.refreshTasksForSelection();
@@ -187,7 +202,7 @@ export default {
       }else if(stamp_end.diff(stamp_start, 'month')>=1){
         stamp_format = 'months';
         date_format = 'MM/YYYY';
-      }else if(stamp_end.diff(stamp_start, 'weeks')>1){
+      }else if(stamp_end.diff(stamp_start, 'weeks')>2){
         stamp_format = 'weeks';
         date_format = 'DD/MM';
       }else if(stamp_end.diff(stamp_start, 'days')>1){
@@ -203,14 +218,14 @@ export default {
 
       var res = [
         {
-          time: stamp_start
-        },
-        {
           time: stamp_end
         },
       ];
 
-      for(var i = 1; i < stamp_end.diff(stamp_start, stamp_format, true); i++){
+      var nbKeyTime = stamp_end.diff(stamp_start, stamp_format, true);
+      var incr = nbKeyTime > 6 ? 3 : 1;
+
+      for(var i = 0; i < nbKeyTime; i+=incr){
         var timeline = this.$moment(stamp_start);
         timeline.minutes(0);
         timeline.seconds(0);
@@ -238,24 +253,48 @@ export default {
 
 <style>
 
-  .user-tasks{
-    margin-bottom: 50px;
-  }
+#timeline-container{
+  top:50px;
+  padding: 20px;
+  background-color: white;
+  min-height: 50px;
+  z-index: 7;
+}
 
-  #gantt-view{
-  }
+#tasks{
+}
 
-  #timeline-container{
-    top:50px;
-    padding: 20px;
-    background-color: white;
-    min-height: 50px;
-    z-index: 7;
-  }
+.user-tasks{
+  margin-bottom: 75px
+}
 
-  #tasks{
-    max-height: 300px;
-  }
+.task-row {
+  margin-bottom: 20px; 
+}
+
+.task-username{
+  font-weight: bold;
+}
+
+.task-title{
+  line-height: 20px;
+  font-size: .75em;
+  margin: 0;  
+}
+
+.task-info{
+  border-left: 1px solid lightgray;
+}
+
+.task-date-info{
+  font-size: .5em;
+  padding: 0px 10px;
+  margin: 0;
+}
+
+.task-date-info p{
+  margin: 0px;
+}
 
 /* ---- Timeline ---- */
 #timeline {

@@ -19,13 +19,17 @@ export default class UserService {
   }
 
   static getUserById(callback, user_id){ 
-    callback(UserService.users()[user_id]); 
+    callback(UserService.users()[user_id-1]); 
   } 
 
   static getUsersOnProject(callback, project, max = Math.max()) {
 
     var res = UserService.users().filter(function(e){
-      return project.project_users.indexOf(e.id) != -1;
+      return project.project_users.map(
+        function(e){
+          return e.user_id;
+        }
+      ).indexOf(e.id) != -1;
     });
 
     callback(project, res);

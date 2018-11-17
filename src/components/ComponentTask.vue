@@ -1,19 +1,16 @@
 <template>
-    <div class="task-row">
-        <div :style="{'width': this.getWidth(), 'margin-left': this.getMarginLeft()}" 
-                class="task" :class="[getTaskTypeClassByTypeId(task.type), selected ? 'selected': '']"
-                @click="$emit('selectTask', task)">
-                <div class="task-info">
-                  <div class="task-date-info inline-block">
-                    <div class="">{{start_date.format(date_format)}}</div>
-                    <div class="">{{end_date.format(date_format)}}</div>
-                  </div>
-                  <p class="inline-block task-title">{{task.title}}</p>
-                </div>
-        </div>
-    </div>
-    
-
+  <div 
+    @click="$emit('selectTask', task)">
+    <b-progress 
+      :class="['task', selected? 'task-selected' : '']"
+      :style="{'width': getWidth(), 'margin-left': getMarginLeft()}"
+      :value="getValue()"
+      :variant="getTaskTypeClassByTypeId()"
+      striped
+      height="30px"
+      :animated="selected">
+    </b-progress>
+  </div>
 </template>
 
 <script>
@@ -25,9 +22,12 @@ export default {
   components: {
   },
   data() {
-    return {};
-  },
-  mounted(){
+    return {
+      value: 0,
+      width: '0',
+      margin_left: '0',
+      variant:'danger'
+    };
   },
   methods: {
     getWidth() {
@@ -56,20 +56,43 @@ export default {
 
       return empty_len / stamp_len * 100 + "%";
     },
-    getTaskTypeClassByTypeId(typeId) {
-      var res = "error-task";
-      switch (typeId) {
+    getValue(){
+      var stamp_start = this.$moment(this.start_date);
+      var stamp_end = this.$moment(this.end_date);
+      var task_start = this.$moment(this.task.date_start);
+      var task_end = this.$moment(this.task.date_end);
+      
+      var current = this.$moment();
+      var res = 0;
+
+      task_end = current >= task_end ? current : task_end >= stamp_end ? stamp_end : task_end;
+      if(current >= task_start){
+        if(current >= task_end){
+          res = 100;
+        }else{
+           
+          var task_len = task_end.diff(task_start);
+          var current_len = current.diff(task_start);
+
+          res = current_len/task_len * 100;
+        }
+      }
+      return res;
+    },
+    getTaskTypeClassByTypeId() {
+      var res = "danger";
+      switch (this.task.type) {
         case 0:
-          res = "default-task";
+          res = "info";
           break;
         case 1:
-          res = "warning-task";
+          res = "warning";
           break;
         case 2:
-          res = "error-task";
+          res = "danger";
           break;
         case 3:
-          res = "blocked-task";
+          res = "secondary";
           break;
       }
       return res;
@@ -79,69 +102,15 @@ export default {
 </script>
 
 <style>
-.task-row {
-  margin-bottom: 10px;
-  width: 100%;
-  min-width: 400px;
-}
-
 .task {
   cursor: pointer;
-  min-width: 10px;
-
-
-
   transition-timing-function: ease;
   transition-property: transform;
   transition: 0.5s;
 }
 
-.task-info{
-  display: inline-block;
-  padding: 5px 10px;
-  background-color: rgba(255, 255, 255, .90);
-  border-radius: 0px 15px 15px 0px;
+.task-selected{
+  border: 3px solid dimgray;
 }
 
-.task:hover , .selected{
-  border-width: 2px !important;
-}
-
-.task-date-info{
-  border-right: solid 1px lightgray;
-  margin-right: 10px;
-  padding: 0px 10px;
-}
-
-.task-title {
-}
-
-.default-task {
-  background-color: rgba(158, 230, 129, 0.432);
-  border: solid 1px rgb(151, 253, 137);
-}
-
-.warning-task {
-  background-color: rgba(255, 217, 0, 0.164);
-  border: solid 1px gold;
-}
-
-.error-task {
-  background-color: rgba(255, 72, 0, 0.164);
-  border: solid 1px rgb(255, 60, 0);
-}
-
-.blocked-task {
-  border: solid 1px rgb(97, 97, 97);
-  background: repeating-linear-gradient(
-    45deg,
-    lightgray,
-    lightgray 5px,
-    darkgray 5px,
-    darkgray 10px
-  );
-}
-.task-name {
-  font-weight: bold;
-}
 </style>
