@@ -35,7 +35,11 @@ export default class ProjectService{
                 user_id : 2,
                 role: 1
             }]),
-        ];
+        ].filter(function(e){
+            return e.project_users.filter(function(e2){
+                return e2.user_id == user.id
+            }).length > 0
+        });
         callback(user, res)
     }
 }
