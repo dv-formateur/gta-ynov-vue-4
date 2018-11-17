@@ -10,7 +10,7 @@ Pas de back end, pour ce connecter il est possible d'utiliser ces utilisateurs (
 - test@gmail.com
 - test2@gmail.com
 
-L'application n'est pas encore sécurisé, donc pas de vérification de droits sur les pages, ça viendra.
+L'application n'est pas encore sécurisée, donc pas de vérification de droits sur les pages, ça viendra.
 
 # Changelog 16-11-2018
 - Add rounting
