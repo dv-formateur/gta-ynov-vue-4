@@ -5,7 +5,7 @@
 # Test url
 > https://raphaelcharre.github.io/gta-ynov-vue/
 
-Pas de back end, pour ce connecter il est possible d'utiliser ces utilisateurs (sans mot de passe) :
+Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs (sans mot de passe) :
 - raphael-charre@hotmail.fr
 - test@gmail.com
 - test2@gmail.com
