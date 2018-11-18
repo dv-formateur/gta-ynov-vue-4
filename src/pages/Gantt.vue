@@ -3,10 +3,11 @@
     <nav-bar></nav-bar>
 
     <div class="row">
-      <div class="col-sm-12 col-md-4 col-lg-2">
+      <div class="col-md-12 col-lg-3 col-xl-2">
+        <!-- FILTERS -->
         <form>
           <div class="form-group">
-            <label for="employee-selector">Selectionner un projet</label>
+            <label for="employee-selector">Projet :</label>
             <select @change="onSelectProject()" class="form-control" name="project-selector" id="project-selector" v-model="selected_project">
               <option v-for="project in user_projects" v-bind:value="project" v-bind:key="project.id">{{project.name}}</option>
             </select>
@@ -14,64 +15,69 @@
 
           <div v-if="show_select_user" id='manager-filter'>
             <div class="form-group">
-              <label for="employee-selector">Selectionner un employe</label>
+              <label for="employee-selector">Employé(s) :</label>
               <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
                 <option value="">Tous</option>
-                <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.name}}</option>
+                <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
               </select>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="start-date-selector">Selectionner une date de debut</label>
+            <label for="start-date-selector">Date de debut :</label>
             <date-picker :config="date_picker_options" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"></date-picker>
           </div>
 
           <div class="form-group">
-            <label for="end-date-selector">Selectionner une date de fin</label>
+            <label for="end-date-selector">Date de fin :</label>
             <date-picker :config="date_picker_options" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"></date-picker>
           </div>
         </form>
 
         <hr>
 
-        <b-card 
-          bg-variant="light"
-          text-variant="black"
-          :header="selected_task.title"
-          v-if="selected_task">
-          <div class="selected-task">
-            <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
-            <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
-            <b-button variant="info" @click="scaleToTask(selected_task)">Mettre a l'echelle</b-button>
-          </div>
-        </b-card>
+        <!-- SELECTED TASK DETAILS -->
+        <transition name="fade">
+          <b-card 
+            bg-variant="light"
+            text-variant="black"
+            :header="selected_task.title"
+            v-if="selected_task">
+            <div class="selected-task">
+              <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
+              <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
+              <b-button variant="info" @click="scaleToTask(selected_task)">Mettre a l'echelle</b-button>
+            </div>
+          </b-card>
+        </transition>
 
       </div>
-      
 
+      
       <div class="col">
         <div id="tasks" class="container-fluid">
+          <!-- TIMELINE -->
           <div class="col-10 offset-2">
             <ol id="timeline">
-              <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
-                <span class="timeline-point current-timeline">
-                </span>
-              </li>
               <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
               :key="key.time.toDate().getTime()">
                 <div class="timeline-info" 
                   @click="selected_end_date=key.time">
                   <p class="timeline-text">{{$moment(key.time).format(date_format)}}</p>
                 </div>
-                <span class="timeline-point">
+                <span class="timeline-point"></span>
+              </li>
+
+              <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
+                <span class="timeline-point current-timeline">
                 </span>
               </li>
             </ol>
           </div>
 
+          <!-- TASKS -->
           <div class="container-fluid user-tasks" v-for="user in getSelectedUsers()" :key="user.id">
-            <p class="task-username">{{user.name}}</p>
+            <router-link class="task-username" :to="'/profile/' + user.id">{{user.fname}} {{user.lname}}</router-link>
             <div 
               v-for="task in user.tasklist" 
               :key="task.id" class="row task-row" 
@@ -150,8 +156,7 @@ export default {
       return this.selected_project;
     },
     getSelectedUsers(){
-
-      return !this.selected_project ? [] : this.selected_user ? [this.selected_user] : this.selected_project ? this.selected_project.users : [];
+      return !this.selected_project ? [] : this.selected_user ? [this.selected_user] : this.selected_project.users;
     },
 
     setProjects(user, projects){

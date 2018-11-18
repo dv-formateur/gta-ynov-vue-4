@@ -9,6 +9,8 @@ import App from './App.vue'
 import Home from './pages/Home.vue'
 import Gantt from './pages/Gantt.vue'
 import Profile from './pages/Profile.vue'
+import NotFound from './pages/NotFound.vue'
+import NoPrivilege from './pages/NoPrivilege.vue'
 
 import "bootstrap/dist/css/bootstrap.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
@@ -27,31 +29,59 @@ Vue.moment.locale('fr', {
 });
 Vue.moment.locale('fr');
 
+
+//ROUTER
 const router = new VueRouter({
   routes: [
     {
       path: '/',
       name: '',
-      component: Home
+      component: Home,
     },
     {
       path: '/home',
       name: 'Home',
-      component: Home
+      component: Home,
     },
     {
       path: '/gantt',
       name: 'Gantt',
-      component: Gantt
+      component: Gantt,
+      beforeEnter: requireAuth,
+      meta: {
+          permission: '2'
+      }
     },
     {
       path: '/profile/:user_id',
       name: 'Profile',
-      component: Profile
+      component: Profile,
+    },
+    {
+      path: '/noprivilege',
+      name: 'No Privilege',
+      component: NoPrivilege,
+    },
+    {
+      path: '*',
+      name: 'Not Found',
+      component: NotFound,
     }
   ]
 })
 
+function requireAuth(to, from, next){
+    var session = router.app.$session;
+    var current_role = session.get('user') ? session.get('user').app_role : 3;
+    if(current_role <= to.meta.permission){
+      next();
+    }else{
+      next('/noprivilege');
+    }  
+}
+
+
+//JQuery
 jQuery.extend(true, jQuery.fn.datetimepicker.defaults, {
   icons: {
     time: 'far fa-clock',

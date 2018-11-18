@@ -2,12 +2,13 @@
     <div class="container-fluid">
         <div id="bg-image"></div>
         <nav-bar></nav-bar>
-        <b-card no-body bg-variant="light" v-if="user" id="account-tabs-card" class="col-xl-4">
+        <b-card no-body bg-variant="light" v-if="user" id="account-tabs-card" class="col-md-12 col-xl-4">
             <b-tabs card>
                 <b-tab title="Compte" class="account-tab" active>
-                    <p>Nom d'utilisateur : <span class="font-weight-light">{{user.name}}</span></p>
+                    <p>Nom : <span class="font-weight-light">{{user.lname}}</span></p>
+                    <p>Prénom : <span class="font-weight-light">{{user.fname}}</span></p>
 
-                    <div v-if="user.id == $session.get('user').id">
+                    <div v-if="$session.get('user') && user.id == $session.get('user').id">
                         <p>Email : <span class="font-weight-light">{{user.email}}</span></p>
                     </div>
                 </b-tab>

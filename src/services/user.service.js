@@ -2,12 +2,12 @@ import User from '../entities/user.js';
 export default class UserService {
 
   static users(){return[
-    new User(1, 'admin', 'raphael-charre@hotmail.fr', 0),
-    new User(2, 'user2', 'test@gmail.com', 1),
-    new User(3, 'user3', 'test2@gmail.com', 1),
-    new User(4, 'user4', 'test3@gmail.com', 1),
-    new User(5, 'user5', 'test4@gmail.com', 1),
-    new User(6, 'user6', 'test5@gmail.com', 1)
+    new User(1, 'admin', 'admin', 'raphael-charre@hotmail.fr', 0),
+    new User(2, 'user2', 'user2', 'test@gmail.com', 1),
+    new User(3, 'user3', 'user3', 'test2@gmail.com', 1),
+    new User(4, 'user4', 'user4', 'test3@gmail.com', 1),
+    new User(5, 'user5', 'user5','test4@gmail.com', 1),
+    new User(6, 'user6', 'user6','test5@gmail.com', 1)
   ]}
 
   static getUserByEmail(callback, user_mail){

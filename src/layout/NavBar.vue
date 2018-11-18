@@ -16,19 +16,12 @@
       </div>
     </b-navbar-nav>
 
-
-    <b-nav-form>
-      <b-form-input size="sm" class="mr-sm-2" type="text" placeholder="Chercher un utilisateur"/>
-      <b-button variant="light" size="sm" class="my-2 my-sm-0">Recherche</b-button>
-    </b-nav-form>
-
-
     <!-- Right aligned nav items -->
     <b-navbar-nav class="ml-auto">
       <b-nav-item-dropdown right v-if="$session.get('user')">
         <!-- Using button-content slot -->
         <template slot="button-content">
-          <em>{{$session.get('user').name}}</em>
+          <em>{{$session.get('user').fname}}</em>
         </template>
         <b-dropdown-item @click="$router.push('/profile/' + $session.get('user').id)">Profile</b-dropdown-item>
         <b-dropdown-item @click="logout()">Déconnexion</b-dropdown-item>
