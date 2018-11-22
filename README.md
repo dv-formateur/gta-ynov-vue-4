@@ -10,7 +10,12 @@ Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs (
 - test@gmail.com
 - test2@gmail.com
 
-L'application n'est pas encore sécurisée, donc pas de vérification de droits sur les pages, ça viendra.
+L'application ne possede pas de backend et n'est donc pas sécurisée.
+
+# Planning 23-11-20018
+- User management
+- Contract basic management
+- Profile page
 
 # Changelog 22-11-2018
 - Add task management
