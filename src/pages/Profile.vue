@@ -8,9 +8,29 @@
                     <p>Nom : <span class="font-weight-light">{{user.lname}}</span></p>
                     <p>Prénom : <span class="font-weight-light">{{user.fname}}</span></p>
 
-                    <div v-if="$session.get('user') && user.id == $session.get('user').id">
+                    <!-- user info -->
+                    <div v-if="$session.get('user') && hasRightOnUser($session.get('user'), user)">
+                        <b-form>
+                            <b-input-group>
+                                <b-input id="form-profile-user-email" v-model="user.email" placeholder="Adresse email" required></b-input>
+                            </b-input-group>
+                        </b-form>
+
+                        <b-btn variant="success">Valider</b-btn>
+                    </div>
+
+                    <div v-else>
                         <p>Email : <span class="font-weight-light">{{user.email}}</span></p>
                     </div>
+
+                    <!-- default planning -->
+                    <div v-if="amIAdmin()">
+
+                    </div>
+                    <div v-else>
+
+                    </div>
+
                 </b-tab>
                 <b-tab title="Projets" >
                     <br>I'm the second tab content

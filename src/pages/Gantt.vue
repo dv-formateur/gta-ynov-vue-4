@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
     <nav-bar></nav-bar>
-
     <div class="row">
       <div class="col-md-12 col-lg-3 col-xl-2">
         <!-- FILTERS -->
+        <h1 class="display-4">Filtres</h1>
         <form>
           <div class="form-group">
             <label for="employee-selector">Projet :</label>
@@ -13,7 +13,7 @@
             </select>
           </div>
 
-          <div v-if="show_select_user" id='manager-filter'>
+          <div v-if="has_right_on_project" id='manager-filter'>
             <div class="form-group">
               <label for="employee-selector">Employé(s) :</label>
               <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
@@ -36,6 +36,10 @@
 
         <hr>
 
+        <div v-if="has_right_on_project">
+          <p>Creer une tache <b-btn @click="createTask" variant="success fas fa-plus"></b-btn></p>
+        </div>
+
         <!-- SELECTED TASK DETAILS -->
         <transition name="fade">
           <b-card 
@@ -44,9 +48,41 @@
             :header="selected_task.title"
             v-if="selected_task">
             <div class="selected-task">
-              <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
-              <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
-              <b-button variant="info" @click="scaleToTask(selected_task)">Mettre a l'echelle</b-button>
+              <div v-if="has_right_on_project">
+                <div class="form-group">
+                  <label for="task-name">Titre:</label>
+                  <b-input type="text" v-model="selected_task.title"></b-input>
+                </div>
+
+                <div class="form-group">
+                  <label for="task-start-date-selector">Date de debut :</label>
+                  <date-picker :config="date_picker_options" class="form-control" name="task-start-date-selector" id="task-start-date-selector" v-model="selected_task.date_start"></date-picker>
+                </div>
+
+                <div class="form-group">
+                  <label for="task-end-date-selector">Date de fin :</label>
+                  <date-picker :config="date_picker_options" class="form-control" name="task-end-date-selector" id="task-end-date-selector" v-model="selected_task.date_end"></date-picker>
+                </div>
+
+                <label for="employee-selector">Employé :</label>
+                <select class="form-control" name="employee-selector" id="employee-selector" v-model="selected_task.user_id">
+                  <option v-for="user in getSelectedProjects().users" v-bind:value="user.id" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+                </select>
+
+                <div class="form-group">
+                  <input type="checkbox" name="task_validated" v-model="selected_task.validated">
+                  <label for="task-validated">Valide</label>
+                  
+                </div>
+
+                <b-btn variant="info" @click="editTask()">Valider</b-btn>
+                <b-btn variant="danger" @click="removeTask()">Supprimer</b-btn>
+              </div>
+              <div v-else>
+                <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
+                <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
+              </div>
+
             </div>
           </b-card>
         </transition>
@@ -83,10 +119,14 @@
               :key="task.id" class="row task-row" 
               v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
                 <div class="task-info col-2">
-                  <p class="task-title">{{task.title}}</p>
+                  <p class="task-title">{{task.title}} <a class="fas fa-eye text-info btn" @click="scaleToTask(task)"></a></p>
                   <div class="task-date-info">
                     <p class="date_start">{{$moment(task.date_start).format('HH:mm DD/MM/YY')}}</p>
                     <p class="date_end">{{$moment(task.date_end).format('HH:mm DD/MM/YY')}}</p>
+                  </div>
+                  <div v-for="warning in getTaskWarnings(getSelectedProjects(), user, task)" :key="warning">
+                    
+                    <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{warning}}</p>
                   </div>
                 </div>
 
@@ -136,7 +176,16 @@ export default {
       selected_end_date: this.$moment().endOf('month'),
       selected_task: null,
 
-      show_select_user: false,
+      has_right_on_project: false,
+
+      input: {
+        create_task:{
+          title: '',
+          date_start: '',
+          date_end: '',
+          user_id: ''
+        }
+      },
 
       date_format: 'DD/MM',
       date_picker_options: {
@@ -150,7 +199,8 @@ export default {
   },
   methods: {
     selectTask(task){
-      this.selected_task = task;
+      
+      this.selected_task = Object.assign({}, task);;
     },
     getSelectedProjects(){
       return this.selected_project;
@@ -175,8 +225,8 @@ export default {
 
     onSelectProject(){
       if(!this.selected_project) return;
-      this.show_select_user = this.selected_project && this.selected_project.project_users.filter((e)=>{return e.user_id == this.$session.get('user').id && e.role <=1}).length > 0
-      this.selected_user = this.show_select_user ? '' : this.$session.get('user');
+      this.has_right_on_project = this.hasRightOnProject(this.selected_project, this.$session.get('user'));
+      this.selected_user = this.has_right_on_project ? '' : this.$session.get('user');
       UserService.getUsersOnProject(this.setUsers, this.selected_project);  
     },
     onSelectUser(){
@@ -186,6 +236,7 @@ export default {
       for(var user of this.getSelectedUsers()){
         TaskService.getAllTasksForUser(this.setTasks, null, user, this.selected_project, this.selected_start_date, this.selected_end_date);
       }
+      this.$forceUpdate()
     },
     scaleToTask(task){
       this.scaleOn(task.date_start, task.date_end);
@@ -221,11 +272,7 @@ export default {
         date_format = 'HH:mm';
       }
 
-      var res = [
-        {
-          time: stamp_end
-        },
-      ];
+      var res = [];
 
       var nbKeyTime = stamp_end.diff(stamp_start, stamp_format, true);
       var incr = nbKeyTime > 6 ? 3 : 1;
@@ -251,8 +298,47 @@ export default {
 
       var empty_stamp = key - stamp_start;
       return stamp > 0? (empty_stamp / stamp) * 100 + '%' : '0%';
+    },
+    getTaskWarnings(project, user, task){
+      var res = [];
+      if(!task.validated){
+        res.push('La tache n\'est pas validee');
+      }
+      return res;
+    },
+
+    createTask(){
+      var user = this.getSelectedUsers()[0];
+      var start = this.$moment().startOf('month');
+      var end = this.$moment().endOf('month');
+      var title = 'default-name';
+      TaskService.createTask(
+        this.onCreateTask,
+        this.$session.get('user'),
+        user.id,
+        this.selected_project.id,
+        title,
+        start,
+        end
+      );
+    },
+    removeTask(){
+      TaskService.removeTask(this.onRemoveTask, this.selected_task)
+    },
+    editTask(){
+      TaskService.editTask(this.refreshTasksForSelection, this.selected_task);
+    },
+
+    onRemoveTask(){
+      this.refreshTasksForSelection();
+      this.selected_task = null;
+    },
+    onCreateTask(task){
+      this.refreshTasksForSelection();
+      this.selected_task = task;
+      this.scaleToTask(task);
     }
-  },
+  }
 }
 </script>
 

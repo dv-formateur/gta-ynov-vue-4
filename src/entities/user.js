@@ -5,8 +5,8 @@ export default class User{
         this.lname = lname;
         this.email = email;
         this.bdate = null,
-        this.adress = '',
-        this.phone = '',
+        this.address = '',
+        this.phone = ''
         this.app_role = app_role;
     }
     

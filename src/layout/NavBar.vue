@@ -14,6 +14,10 @@
       <div v-if="$session.get('user')">
         <b-nav-item><router-link class="nav-link" to="/gantt">Gantt</router-link></b-nav-item>
       </div>
+
+      <div v-if="amIAdmin()">
+        <b-nav-item><router-link class="nav-link" to="/admin">Administration</router-link></b-nav-item>
+      </div>
     </b-navbar-nav>
 
     <!-- Right aligned nav items -->
@@ -63,6 +67,7 @@ export default {
   },
   data() {
     return {
+      vm: Vue,
       input: {
         username: '',
         password: ''

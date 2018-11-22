@@ -3,7 +3,7 @@
 > A Vue.js project
 
 # Test url
-> https://raphaelcharre.github.io/gta-ynov-vue/
+> https://raphaelcharre.github.io/
 
 Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs (sans mot de passe) :
 - raphael-charre@hotmail.fr
@@ -11,6 +11,13 @@ Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs (
 - test2@gmail.com
 
 L'application n'est pas encore sécurisée, donc pas de vérification de droits sur les pages, ça viendra.
+
+# Changelog 22-11-2018
+- Add task management
+- Add Admin panel page 
+- Startin Admin panel
+- Starting Contracts logic
+- Starting profile configuration
 
 # Changelog 16-11-2018
 - Add rounting

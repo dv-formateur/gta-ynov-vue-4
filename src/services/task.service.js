@@ -1,21 +1,55 @@
 import Task from '../entities/task'
 export default class TaskService {
+
+    static tasks(){
+        return JSON.parse(localStorage.getItem('tasks')).map(task=>{
+            task.date_start = moment(task.date_start);
+            task.date_end = moment(task.date_end);
+            return task;
+        });
+    }
+
     static getAllTasksForUser(callback, max = Math.max(), user, project, date_start = 0, date_end = Math.max()){
-        var res = [
-            new Task('task1-' + user.id + '-' + project.id, 'task1-' + user.id + '-' + project.id, 0, new Date('2018-11-1'), new Date('2018-11-20'), user.id, 1),
-            new Task('task2-' + user.id + '-' + project.id, 'task2-' + user.id + '-' + project.id, 1, new Date('2018-11-4'), new Date('2018-11-5'), user.id, 1),
-            new Task('task3-' + user.id + '-' + project.id, 'task3-' + user.id + '-' + project.id, 2, new Date('2018-11-8'), new Date('2018-11-15'), user.id, 1),
-            new Task('task4-' + user.id + '-' + project.id, 'task4-' + user.id + '-' + project.id, 3, new Date('2018-11-2'), new Date('2018-11-10'), user.id, 1)
-        ];
+        var res = TaskService.tasks();
         
         res = res.filter((e)=>{
-            return project.id == e.project_id;
+            return project.id == e.project_id && e.user_id == user.id;
         });
 
         res = res.sort((e1, e2)=>{
-            return e1.date_start.getTime() < e2.date_start.getTime() ? -1 : 1
+            return new Date(e1.date_start).getTime() < new Date(e2.date_start).getTime() ? -1 : 1
         });
         
         callback(user, res);
+    }
+
+    static createTask(callback, user, user_id, project_id, name, start, end){
+        var tasksList = this.tasks();
+        var prevTask = tasksList[tasksList.length - 1];
+        var task_id = prevTask.id + 1;
+        var task = new Task(task_id, name, 0, start, end, user_id, project_id, 0);
+        tasksList.push(task);
+        localStorage.setItem('tasks', JSON.stringify(tasksList));
+        callback(task);
+    }
+
+    static editTask(callback, task){
+        var tasksList = this.tasks();
+        var index = tasksList.findIndex(el => {return el.id == task.id});
+        if(index != -1){
+            tasksList[index] = task;
+            localStorage.setItem('tasks', JSON.stringify(tasksList));
+        }
+        callback();
+    }
+
+    static removeTask(callback, task){
+        var tasksList = this.tasks();
+        var index = tasksList.findIndex(el => {return el.id == task.id});
+        if(index != -1){
+            tasksList.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasksList));
+        }
+        callback();
     }
 }
