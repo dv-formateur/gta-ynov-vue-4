@@ -11,26 +11,21 @@
                             style="text-shadow: 1px 1px 2px #333;"
                             controls
                             indicators
-                            img-height="480"
                             background="#FFF"
+                            img-width="1024"
+                            img-height="480"
                             :interval="4000">
 
                             <!-- Text slides with image -->
-                            <b-carousel-slide caption="First slide"
-                                                text="Nulla vitae elit libero, a pharetra augue mollis interdum."
-                                                img-src="https://picsum.photos/1024/480/?image=52"
+                            <b-carousel-slide
+                                                text="Gerez vos taches avec la vue gantt."
+                                                :img-src="require('../img/diapo1.jpg')"
                             ></b-carousel-slide>
 
                             <!-- Text slides with image -->
-                            <b-carousel-slide caption="First slide"
-                                                text="Nulla vitae elit libero, a pharetra augue mollis interdum."
-                                                img-src="https://picsum.photos/1024/480/?image=1"
-                            ></b-carousel-slide>
-
-                            <!-- Text slides with image -->
-                            <b-carousel-slide caption="First slide"
-                                                text="Nulla vitae elit libero, a pharetra augue mollis interdum."
-                                                img-src="https://picsum.photos/1024/480/?image=12"
+                            <b-carousel-slide
+                                                text="Gerez vos utilsateurs."
+                                                :img-src="require('../img/diapo2.jpg')"
                             ></b-carousel-slide>
                         </b-carousel>
                     </div>
@@ -50,7 +45,6 @@ export default {
   data() {
     return {
       input: {
-        email: ""
       }
     };
   },
@@ -62,25 +56,5 @@ export default {
 <style>
 #home-page{
     height: 100%; 
-}
-#bg-image{
-    position: fixed;
-  left: 0;
-  right: 0;
-  z-index: 0;
-
-  display: block;
-    background-image: url('../img/home_bg.jpg');
-    /* Add the blur effect */
-    filter: blur(8px);
-    -webkit-filter: blur(8px);
-
-    /* Full height */
-    height: 100%; 
-
-    /* Center and scale the image nicely */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
 }
 </style>

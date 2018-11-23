@@ -1,38 +1,61 @@
 import User from '../entities/user.js';
-export default class UserService {
+import DAOService from './dao.service'
+export default class UserService extends DAOService{
 
-  static users(){
-    return JSON.parse(localStorage.getItem('users'));
+  static getTableName(){
+    return 'users';
+  }
+
+  static create(callback, entity){
+    super.getAll(
+      users =>{
+        var index = users.findIndex(el => {return el.email == entity.email});
+        if(index == -1){
+          super.create(callback, entity);
+        }else{
+          callback(null);
+        }
+      }
+    )
   }
 
   static getUserByEmail(callback, user_mail){
-    var res = UserService.users().filter(function(e){
-      return e.email === user_mail;
-    });
-
-    callback(res.length > 0 ? res[0] : null);
+    super.getAll(
+      users =>{
+        users = users.filter(function(e){
+          return e.email === user_mail;
+        });
+        callback(users.length > 0 ? users[0] : null);
+      }
+    )
   }
 
   static getUserById(callback, user_id){ 
-    callback(UserService.users()[user_id-1]); 
+    super.getAll(
+      users =>{
+        users = users.filter(e=>{
+          return e.id == user_id;
+        })
+
+        callback(users.length > 0 ? users[0] : null); 
+      }
+    )
   } 
 
   static getUsersOnProject(callback, project, max = Math.max()) {
-
-    var res = UserService.users().filter(function(e){
-      return project.project_users.map(
-        function(e){
-          return e.user_id;
-        }
-      ).indexOf(e.id) != -1;
-    });
-
-    callback(project, res);
-
-  }
-
-  static getAll(callback){
-    callback(UserService.users());
+    super.getAll(
+      users =>{
+        var res = users.filter(function(e){
+          return project.project_users.map(
+            function(e){
+              return e.user_id;
+            }
+          ).indexOf(e.id) != -1;
+        });
+    
+        callback(project, res);
+      }
+    )
   }
 
   static authenticate(callback, email, password){

@@ -12,10 +12,15 @@ Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs (
 
 L'application ne possede pas de backend et n'est donc pas sécurisée.
 
-# Planning 23-11-20018
+# TODO
+- Contract management
+- Compute users bilan
+- Finish profiles
+- Take screenshot for the carousel
+
+# Changelog 23-11-20018
 - User management
-- Contract basic management
-- Profile page
+- Full Project management
 
 # Changelog 22-11-2018
 - Add task management

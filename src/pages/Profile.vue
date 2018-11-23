@@ -61,9 +61,11 @@ export default {
     methods: {
         setUser(user){
             this.user = user;
+            console.log(user)
         }
     },
     mounted(){
+
         UserService.getUserById(this.setUser, this.$route.params.user_id);
     }
 }

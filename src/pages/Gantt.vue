@@ -4,7 +4,6 @@
     <div class="row">
       <div class="col-md-12 col-lg-3 col-xl-2">
         <!-- FILTERS -->
-        <h1 class="display-4">Filtres</h1>
         <form>
           <div class="form-group">
             <label for="employee-selector">Projet :</label>
@@ -33,11 +32,12 @@
             <date-picker :config="date_picker_options" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"></date-picker>
           </div>
         </form>
+        <b-btn class="form-control" variant="info" @click="scaleOn($moment().startOf('month'), $moment().endOf('month'))">Reinitialiser</b-btn>
 
         <hr>
 
         <div v-if="has_right_on_project">
-          <p>Creer une tache <b-btn @click="createTask" variant="success fas fa-plus"></b-btn></p>
+          <p class="text-center"><a v-b-popover.hover="'Creer une tache'" style="font-size: 24px;" @click="createTask" class="fas fa-plus-circle btn text-success"></a></p>
         </div>
 
         <!-- SELECTED TASK DETAILS -->
@@ -75,8 +75,8 @@
                   
                 </div>
 
-                <b-btn variant="info" @click="editTask()">Valider</b-btn>
-                <b-btn variant="danger" @click="removeTask()">Supprimer</b-btn>
+                <b-btn v-b-popover.hover="'Valider les changements'" variant="info" @click="editTask()">Valider</b-btn>
+                <b-btn v-b-popover.hover="'Supprimer la tache'" variant="danger" @click="removeTask()">Supprimer</b-btn>
               </div>
               <div v-else>
                 <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
@@ -277,7 +277,7 @@ export default {
       var nbKeyTime = stamp_end.diff(stamp_start, stamp_format, true);
       var incr = nbKeyTime > 6 ? 3 : 1;
 
-      for(var i = 0; i < nbKeyTime; i+=incr){
+      for(var i = 0; i <= nbKeyTime; i+=incr){
         var timeline = this.$moment(stamp_start);
         timeline.minutes(0);
         timeline.seconds(0);
@@ -312,21 +312,15 @@ export default {
       var start = this.$moment().startOf('month');
       var end = this.$moment().endOf('month');
       var title = 'default-name';
-      TaskService.createTask(
-        this.onCreateTask,
-        this.$session.get('user'),
-        user.id,
-        this.selected_project.id,
-        title,
-        start,
-        end
-      );
+
+      var task = new Task(0, title, 0, start, end, this.$session.get('user').id, this.selected_project.id, this.has_right_on_project);
+      TaskService.create(this.onCreateTask, task);
     },
     removeTask(){
-      TaskService.removeTask(this.onRemoveTask, this.selected_task)
+      TaskService.remove(this.onRemoveTask, this.selected_task)
     },
     editTask(){
-      TaskService.editTask(this.refreshTasksForSelection, this.selected_task);
+      TaskService.modify(this.refreshTasksForSelection, this.selected_task);
     },
 
     onRemoveTask(){

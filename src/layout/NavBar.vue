@@ -9,14 +9,14 @@
   <b-collapse is-nav id="nav_collapse">
 
     <b-navbar-nav>
-      <b-nav-item><router-link class="nav-link" to="/">Accueil</router-link></b-nav-item>
+      <b-nav-item :to="'/home'">Accueil</b-nav-item>
 
       <div v-if="$session.get('user')">
-        <b-nav-item><router-link class="nav-link" to="/gantt">Gantt</router-link></b-nav-item>
+        <b-nav-item :to="'/gantt'">Gantt</b-nav-item>
       </div>
 
       <div v-if="amIAdmin()">
-        <b-nav-item><router-link class="nav-link" to="/admin">Administration</router-link></b-nav-item>
+        <b-nav-item :to="'/admin'">Administration</b-nav-item>
       </div>
     </b-navbar-nav>
 
@@ -108,6 +108,27 @@ export default {
 #navbar .nav-item .nav-link a a:hover{
   color: lightgray;
   text-decoration: none;
+}
+
+#bg-image{
+    position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 0;
+
+  display: block;
+    background-image: url('../img/home_bg.jpg');
+    /* Add the blur effect */
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+
+    /* Full height */
+    height: 100%; 
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 </style>
