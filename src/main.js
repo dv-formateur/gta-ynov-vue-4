@@ -8,6 +8,7 @@ import VueRouter from 'vue-router'
 import App from './App.vue'
 import Home from './pages/Home.vue'
 import Gantt from './pages/Gantt.vue'
+import MyTeams from './pages/MyTeams.vue'
 import Profile from './pages/Profile.vue'
 import AdminPanel from './pages/AdminPanel.vue'
 import NotFound from './pages/NotFound.vue'
@@ -19,8 +20,9 @@ import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 
 import User from './entities/user.js';
 import Task from './entities/task.js';
-import Project from './entities/project.js';
+import Team from './entities/team.js';
 import Contract from './entities/contract.js';
+import Occupation from './entities/occupation';
 
 Vue.use(VueRouter)
 Vue.use(VueSession)
@@ -53,6 +55,15 @@ const router = new VueRouter({
       path: '/gantt',
       name: 'Gantt',
       component: Gantt,
+      beforeEnter: requireAuth,
+      meta: {
+          permission: '2'
+      }
+    },
+    {
+      path: '/teams',
+      name: 'Teams',
+      component: MyTeams,
       beforeEnter: requireAuth,
       meta: {
           permission: '2'
@@ -122,9 +133,9 @@ localStorage.setItem('users',JSON.stringify(
 ));
 
 
-localStorage.setItem('projects', JSON.stringify( 
+localStorage.setItem('teams', JSON.stringify( 
 [
-  new Project (1, 'prj1', [
+  new Team (1, 'prj1', [
   {
       user_id : 1,
       role: 1
@@ -133,7 +144,7 @@ localStorage.setItem('projects', JSON.stringify(
       user_id : 3,
       role: 2
   }]),
-  new Project (2, 'prj2', [
+  new Team (2, 'prj2', [
   {
       user_id : 1,
       role: 1
@@ -147,7 +158,7 @@ localStorage.setItem('projects', JSON.stringify(
       role: 2
   }]
   ),
-  new Project (3, 'prj3', [
+  new Team (3, 'prj3', [
   {
       user_id : 1,
       role: 2
@@ -169,13 +180,27 @@ localStorage.setItem('tasks', JSON.stringify(
 ));
 
 localStorage.setItem('contracts', JSON.stringify(
-[]
+  [
+    new Contract(0, 1, new Date('01-01-2016'), new Date('01-01-2019'), 'contrat1'),
+    new Contract(1, 2, new Date('01-01-2016'), new Date('01-01-2019'), 'contrat2'),
+    new Contract(2, 3, new Date('01-01-2016'), new Date('01-01-2019'), 'contrat3'),
+    new Contract(3, 4, new Date('01-01-2016'), new Date('01-01-2019'), 'contrat4'),
+  ]
+));
+
+localStorage.setItem('occupations', JSON.stringify(
+  [
+    new Occupation(1, 'Temps de travail', 1),
+    new Occupation(2, 'Congés payé', 0), 
+    new Occupation(3, 'Récupération', 0), 
+    new Occupation(4, 'Repos hebdomadaire', 0)
+  ]
 ));
 
 //GLOBAL METHODS
-Vue.prototype.hasRightOnProject = function(project, user){
+Vue.prototype.hasRightOnTeam = function(team, user){
   return this.isAdmin(user) || 
-    project.project_users.filter((e)=>{
+    team.team_users.filter((e)=>{
       return e.user_id == user.id && e.role <=1
     }).length > 0
 }
@@ -190,6 +215,25 @@ Vue.prototype.isAdmin = function(user){
 
 Vue.prototype.amIAdmin = function(){
   return this.$session.get('user') && this.isAdmin(this.$session.get('user'));
+}
+
+Vue.prototype.amIAuthentified = function(){
+  return this.$session.get('user');
+}
+
+Vue.prototype.getRoleString = function(n){
+  var res = 'unknown';
+  switch(n){
+      case 1:
+          res = 'manager';
+          break;
+      
+      case 2:
+          res = 'utilisateur';
+          break;
+  }
+
+  return res;
 }
 
 new Vue({

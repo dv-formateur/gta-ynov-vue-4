@@ -28,6 +28,7 @@
           <em>{{$session.get('user').fname}}</em>
         </template>
         <b-dropdown-item @click="$router.push('/profile/' + $session.get('user').id)">Profile</b-dropdown-item>
+        <b-dropdown-item @click="$router.push('/teams')">Mes équipes</b-dropdown-item>
         <b-dropdown-item @click="logout()">Déconnexion</b-dropdown-item>
       </b-nav-item-dropdown>
 

@@ -42,18 +42,18 @@ export default class UserService extends DAOService{
     )
   } 
 
-  static getUsersOnProject(callback, project, max = Math.max()) {
+  static getUsersOnTeam(callback, team, max = Math.max()) {
     super.getAll(
       users =>{
         var res = users.filter(function(e){
-          return project.project_users.map(
+          return team.team_users.map(
             function(e){
               return e.user_id;
             }
           ).indexOf(e.id) != -1;
         });
     
-        callback(project, res);
+        callback(team, res);
       }
     )
   }

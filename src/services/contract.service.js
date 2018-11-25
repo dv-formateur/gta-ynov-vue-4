@@ -1,14 +1,16 @@
-import Contract from '../entities/contract'
-export default class ContractService{
-    static getContractsForUser(user){
-        var contract_id_mult= (user.id);
-        var res = [
-            new Contract(0, user.id, new Date('01-01-2016'), new Date('01-01-2019')),
-            new Contract(1, user.id, new Date('01-01-2016'), new Date('01-01-2019')),
-            new Contract(2, user.id, new Date('01-01-2016'), new Date('01-01-2019')),
-            new Contract(3, user.id, new Date('01-01-2016'), new Date('01-01-2019')),
-        ];
+import DAOService from './dao.service';
+export default class ContractService extends DAOService{
+    static getTableName(){
+        return 'contracts';
+    }
 
-        return res;
+    static getContractsForUser(callback, user){
+        super.getAll(entities =>{
+            entities = entities.filter(e=>{
+                console.log(e)
+                return e.user_id == user.id;
+            })
+            callback(entities, user);
+        });
     }
 }

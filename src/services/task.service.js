@@ -6,11 +6,11 @@ export default class TaskService extends DAOService{
         return 'tasks'
     }
 
-    static getAllTasksForUser(callback, max = Math.max(), user, project, date_start = 0, date_end = Math.max()){
+    static getAllTasksForUser(callback, max = Math.max(), user, team, date_start = 0, date_end = Math.max()){
         super.getAll(
             tasks =>{
                 tasks = tasks.filter((e)=>{
-                    return project.id == e.project_id && e.user_id == user.id;
+                    return team.id == e.team_id && e.user_id == user.id;
                 });
         
                 tasks = tasks.sort((e1, e2)=>{

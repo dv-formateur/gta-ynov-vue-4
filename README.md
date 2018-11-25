@@ -1,7 +1,5 @@
 # gta-ynov-vue
 
-> A Vue.js project
-
 # Test url
 > https://raphaelcharre.github.io/
 
@@ -20,7 +18,7 @@ L'application ne possede pas de backend et n'est donc pas sécurisée.
 
 # Changelog 23-11-20018
 - User management
-- Full Project management
+- Full Team management
 
 # Changelog 22-11-2018
 - Add task management
@@ -34,7 +32,7 @@ L'application ne possede pas de backend et n'est donc pas sécurisée.
 - Better home page
 
 # Changelog 15-11-2018
-- Add project logic
+- Add team logic
 - Change timeline appearence
 - Fix some responsivity issues
 - Starting home page
@@ -44,7 +42,7 @@ L'application ne possede pas de backend et n'est donc pas sécurisée.
 - Init Login / logout system
 
 # Changelog 08-11-2018
-- Project Initialization
+- Team Initialization
 - Add decorative navbar
 - Create fake data to test front end
 - Create Gantt view

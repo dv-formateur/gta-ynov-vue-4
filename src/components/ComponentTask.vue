@@ -5,7 +5,7 @@
       :class="['task', selected? 'task-selected' : '']"
       :style="{'width': getWidth(), 'margin-left': getMarginLeft()}"
       :value="getValue()"
-      :variant="getTaskTypeClassByTypeId()"
+      :variant="getTaskColor()"
       striped
       height="30px"
       :animated="selected">
@@ -80,22 +80,13 @@ export default {
       }
       return res;
     },
-    getTaskTypeClassByTypeId() {
-      var res = "danger";
-      switch (this.task.type) {
-        case 0:
-          res = "info";
-          break;
-        case 1:
-          res = "warning";
-          break;
-        case 2:
-          res = "danger";
-          break;
-        case 3:
-          res = "secondary";
-          break;
-      }
+    getTaskColor() {
+      var res = "info";
+      if(this.$moment(this.task.date_end) <= this.$moment()) res = "success";
+      if(this.task.occupation.effective_hours_mult == 0) res = "secondary";
+      if(this.task.warnings.length > 0) res = 'warning';
+      if(this.task.dangers.length > 0) res = 'danger';
+
       return res;
     }
   }

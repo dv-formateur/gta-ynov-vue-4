@@ -6,18 +6,18 @@
         <!-- FILTERS -->
         <form>
           <div class="form-group">
-            <label for="employee-selector">Projet :</label>
-            <select @change="onSelectProject()" class="form-control" name="project-selector" id="project-selector" v-model="selected_project">
-              <option v-for="project in user_projects" v-bind:value="project" v-bind:key="project.id">{{project.name}}</option>
+            <label for="employee-selector">Equipe :</label>
+            <select @change="onSelectTeam()" class="form-control" name="team-selector" id="team-selector" v-model="selected_team">
+              <option v-for="team in user_teams" v-bind:value="team" v-bind:key="team.id">{{team.name}}</option>
             </select>
           </div>
 
-          <div v-if="has_right_on_project" id='manager-filter'>
+          <div v-if="has_right_on_team" id='manager-filter'>
             <div class="form-group">
               <label for="employee-selector">Employé(s) :</label>
               <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
                 <option value="">Tous</option>
-                <option v-for="user in getSelectedProjects().users" v-bind:value="user" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+                <option v-for="user in getSelectedTeams().users" v-bind:value="user" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
               </select>
             </div>
           </div>
@@ -36,7 +36,7 @@
 
         <hr>
 
-        <div v-if="has_right_on_project">
+        <div v-if="has_right_on_team">
           <p class="text-center"><a v-b-popover.hover="'Creer une tache'" style="font-size: 24px;" @click="createTask" class="fas fa-plus-circle btn text-success"></a></p>
         </div>
 
@@ -48,7 +48,7 @@
             :header="selected_task.title"
             v-if="selected_task">
             <div class="selected-task">
-              <div v-if="has_right_on_project">
+              <div v-if="has_right_on_team">
                 <div class="form-group">
                   <label for="task-name">Titre:</label>
                   <b-input type="text" v-model="selected_task.title"></b-input>
@@ -66,13 +66,17 @@
 
                 <label for="employee-selector">Employé :</label>
                 <select class="form-control" name="employee-selector" id="employee-selector" v-model="selected_task.user_id">
-                  <option v-for="user in getSelectedProjects().users" v-bind:value="user.id" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+                  <option v-for="user in getSelectedTeams().users" v-bind:value="user.id" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+                </select>
+
+                <label for="occupation-selector">Occupation :</label>
+                <select class="form-control" name="occupation-selector" id="occupation-selector" v-model="selected_task.occupation_id">
+                  <option v-for="occupation in occupations" v-bind:value="occupation.id" v-bind:key="occupation.id">{{occupation.name}}</option>
                 </select>
 
                 <div class="form-group">
                   <input type="checkbox" name="task_validated" v-model="selected_task.validated">
                   <label for="task-validated">Valide</label>
-                  
                 </div>
 
                 <b-btn v-b-popover.hover="'Valider les changements'" variant="info" @click="editTask()">Valider</b-btn>
@@ -124,8 +128,7 @@
                     <p class="date_start">{{$moment(task.date_start).format('HH:mm DD/MM/YY')}}</p>
                     <p class="date_end">{{$moment(task.date_end).format('HH:mm DD/MM/YY')}}</p>
                   </div>
-                  <div v-for="warning in getTaskWarnings(getSelectedProjects(), user, task)" :key="warning">
-                    
+                  <div v-for="warning in task.warnings" :key="warning">
                     <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{warning}}</p>
                   </div>
                 </div>
@@ -152,7 +155,7 @@
 <script>
 import Task from '../entities/task.js'
 import User from '../entities/user.js'
-import Project from '../entities/project.js'
+import Team from '../entities/team.js'
 
 import NavBar from "../layout/NavBar.vue";
 import ComponentTask from '../components/ComponentTask.vue'
@@ -160,7 +163,8 @@ import DatePicker from 'vue-bootstrap-datetimepicker';
 
 import UserService from '../services/user.service'
 import TaskService from '../services/task.service'
-import ProjectService from '../services/project.service'
+import TeamService from '../services/team.service'
+import OccupationService from '../services/occupation.service'
 
 export default {
   name: 'gantt-view',
@@ -169,14 +173,14 @@ export default {
   },
   data () {
     return {
-      user_projects: [],
+      user_teams: [],
       selected_user: '',
-      selected_project: '',
+      selected_team: '',
       selected_start_date:  this.$moment().startOf('month'),
       selected_end_date: this.$moment().endOf('month'),
       selected_task: null,
 
-      has_right_on_project: false,
+      has_right_on_team: false,
 
       input: {
         create_task:{
@@ -191,50 +195,63 @@ export default {
       date_picker_options: {
         format: 'DD MMM YYYY HH:mm',
         useCurrent: true,
-      }
+      },
+
+      occupations: []
     }
   },
   mounted() {
-    ProjectService.getUserProjects(this.setProjects, this.$session.get('user'));
+    TeamService.getUserTeams(this.setTeams, this.$session.get('user'));
+    OccupationService.getAll(this.setOccupations);
   },
   methods: {
+    setOccupations(occupations){
+      this.occupations = occupations
+    },
     selectTask(task){
-      
       this.selected_task = Object.assign({}, task);;
     },
-    getSelectedProjects(){
-      return this.selected_project;
+    getSelectedTeams(){
+      return this.selected_team;
     },
     getSelectedUsers(){
-      return !this.selected_project ? [] : this.selected_user ? [this.selected_user] : this.selected_project.users;
+      return !this.selected_team ? [] : this.selected_user ? [this.selected_user] : this.selected_team.users;
     },
 
-    setProjects(user, projects){
-      this.user_projects = projects;
-      this.selected_project = this.user_projects ? this.user_projects[0] : '';
-      this.onSelectProject();
+    setTeams(user, teams){
+      this.user_teams = teams;
+      this.selected_team = this.user_teams ? this.user_teams[0] : '';
+      this.onSelectTeam();
     },
-    setUsers(project, users){
-      project.users = users;
+    setUsers(team, users){
+      team.users = users;
       this.onSelectUser();
     },
     setTasks(user, tasklist){
       user.tasklist = tasklist;
+      for(var task of tasklist){
+        this.computeTaskWarnings(task);
+        this.computeTaskDangers(task);
+        OccupationService.getTaskOccupation(this.setTaskOcuppation, task);
+      }
+    },
+    setTaskOcuppation(task, occupation){
+      task.occupation = occupation;
     },
 
 
-    onSelectProject(){
-      if(!this.selected_project) return;
-      this.has_right_on_project = this.hasRightOnProject(this.selected_project, this.$session.get('user'));
-      this.selected_user = this.has_right_on_project ? '' : this.$session.get('user');
-      UserService.getUsersOnProject(this.setUsers, this.selected_project);  
+    onSelectTeam(){
+      if(!this.selected_team) return;
+      this.has_right_on_team = this.hasRightOnTeam(this.selected_team, this.$session.get('user'));
+      this.selected_user = this.has_right_on_team ? '' : this.$session.get('user');
+      UserService.getUsersOnTeam(this.setUsers, this.selected_team);  
     },
     onSelectUser(){
       this.refreshTasksForSelection();
     },
     refreshTasksForSelection(){
       for(var user of this.getSelectedUsers()){
-        TaskService.getAllTasksForUser(this.setTasks, null, user, this.selected_project, this.selected_start_date, this.selected_end_date);
+        TaskService.getAllTasksForUser(this.setTasks, null, user, this.selected_team, this.selected_start_date, this.selected_end_date);
       }
       this.$forceUpdate()
     },
@@ -299,21 +316,24 @@ export default {
       var empty_stamp = key - stamp_start;
       return stamp > 0? (empty_stamp / stamp) * 100 + '%' : '0%';
     },
-    getTaskWarnings(project, user, task){
+    computeTaskWarnings(task){
       var res = [];
       if(!task.validated){
         res.push('La tache n\'est pas validee');
       }
-      return res;
+      task.warnings = res;
+    },
+    computeTaskDangers(task){
+      task.dangers = [];
     },
 
     createTask(){
       var user = this.getSelectedUsers()[0];
-      var start = this.$moment().startOf('month');
-      var end = this.$moment().endOf('month');
+      var start = this.selected_start_date;
+      var end = this.selected_end_date;
       var title = 'default-name';
 
-      var task = new Task(0, title, 0, start, end, this.$session.get('user').id, this.selected_project.id, this.has_right_on_project);
+      var task = new Task(0, title, 0, start, end, this.$session.get('user').id, this.selected_team.id, this.has_right_on_team);
       TaskService.create(this.onCreateTask, task);
     },
     removeTask(){
@@ -330,7 +350,6 @@ export default {
     onCreateTask(task){
       this.refreshTasksForSelection();
       this.selected_task = task;
-      this.scaleToTask(task);
     }
   }
 }

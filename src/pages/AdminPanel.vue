@@ -1,112 +1,128 @@
 <template>
     <div class="container-fluid">
         <nav-bar></nav-bar>
-        <b-card no-body bg-variant="light" class="">
+        <b-card no-body bg-variant="light">
             <b-tabs card>
                 <b-tab title="Comptes" class="account-tab" active>
-                    <div>
-                        <p>Ajouter un utilisateur: </p>
-                        <b-form inline class="form-group">
-                            <b-input-group>
-                                <b-input id="input-user-lname" v-model="user_form.lname" left="@" class="mb-2 mr-sm-2 mb-sm-0" placeholder="Nom" />
-                            </b-input-group>
-                            <b-input-group>
-                                <b-input id="input-user-fname" v-model="user_form.fname" left="@" class="mb-2 mr-sm-2 mb-sm-0" placeholder="Prenom" />
-                            </b-input-group>
-                            <b-input-group>
-                                <b-input id="input-user-email" type="email" v-model="user_form.email" left="@" class="mb-2 mr-sm-2 mb-sm-0" placeholder="Adresse mail" />
-                            </b-input-group>
-                            <b-input-group>
-                                <input type="checkbox" id="input-user-admin" name="input-user-admin" v-model="user_form.admin" class="mb-2 mr-sm-2 mb-sm-0"/>
-                                <label for="input-user-admin">Administrateur</label>
-                            </b-input-group>
-                        </b-form>
-                    <b-button v-b-popover.hover="'Creer l\'utilisateur'" @click="createUser()" variant="info">Valider</b-button>
-                    </div>
-
-                    <hr/>
-
-                    <div class="form-group">
-                        <input placeholder="Rechercher un utilisateur" class="form-control" type="text" v-model="search_user">
-                    </div>
-
-                    <table class="table table-responsive-sm table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Roles</th>
-                                <th>Nom</th>
-                                <th>Prenom</th>
-                                <th>Email</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="search_user === '' || user.fname.includes(search_user) || user.lname.includes(search_user) || user.email.includes(search_user)" v-for="user in users" :key="user.id"  @click="$router.push('/profile/' + user.id)">
-                                <td><i v-b-popover.hover="'Administrateur'" v-if="user.app_role<=0" class="fas fa-chess-king text-info"></i></td>
-                                <td>{{user.lname}}</td>
-                                <td>{{user.fname}}</td>
-                                <td>{{user.email}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <user-management>
+                    </user-management>
                 </b-tab>
-                <b-tab title="Projets" >
-                    <div class="row">
-                        <div class="col-md-3" id="admin-project-selector">
-                            <div class="form-group">
-                                <input placeholder="Rechercher un projet" class="form-control" type="text" v-model="search_project">
-                            </div>
-                            <b-list-group>
-                                <b-list-group-item 
-                                    button 
-                                    class="d-flex justify-content-between align-items-center" 
-                                    @click="selectProject(project)" 
-                                    :active="selected_project && selected_project.id==project.id" 
-                                    v-for="project in projects"
-                                    v-if="search_project === '' || project.name.includes(search_project)"
-                                    :key="project.id">
 
-                                    {{project.name}}
-                                    <b-badge variant="info" pill>{{project.project_users.length}}</b-badge>
-                                </b-list-group-item>
-                            </b-list-group>
-                            <p class="text-center"><a v-b-popover.hover="'Creer un projet'" style="font-size: 24px;" @click="createProject()" class="fas fa-plus-circle btn text-success"></a></p>
-                        </div>
 
-                        <div class="col" v-if="selected_project">
-                            <div class="form-group">
-                                <b-btn variant="success" v-b-popover.hover="'Valider les changements'" @click="modifyProject(selected_project)">Valider</b-btn>
-                                <b-btn variant="danger" v-b-popover.hover="'Supprimer le projet'" @click="removeProject(selected_project)">Supprimer</b-btn>
-                            </div>
-
-                            <hr>
-
-                            <div class="form-group">
-                                <input type="text" class="form-control" placeholder="Nom du projet" v-model="selected_project.name">
-                            </div>
-                            
-                            <admin-project-user
-                                v-for="user in selected_project.project_users" :key="user.user_id"
-                                :project="selected_project" 
-                                :project_user="user" 
-                                class="row project-user-form-container" >
-                            </admin-project-user>
-                            <div>
-                                <label for="add-user-to-project-selector">Ajouter un utlisateur: </label>
-                                <select v-model="add_user_to_project_selector" class="form-control" name="add-user-to-project-selector">
-                                    <option :value="null">--Selectionner un utilisateur--</option>
-                                    <option selected v-for="user in users_not_in_project" :key="user.id" :value="user">{{user.fname}} {{user.lname}}</option>
-                                </select>
-                                <p class="text-center"><a style="font-size: 48px;" @click="addUserOnProject()" class="fas fa-plus-circle btn text-success"></a></p>
-                            </div>
-
-                            <hr>
-                            <b-btn variant="success" v-b-popover.hover="'Valider les changements'" @click="modifyProject(selected_project)">Valider</b-btn>
-                            <b-btn variant="danger" v-b-popover.hover="'Supprimer le projet'" @click="removeProject(selected_project)">Supprimer</b-btn>
-                        </div>
-                       
-                    </div>
+                <b-tab title="Equipes" >
+                    <team-management 
+                        :teams="teams"
+                        @onCreateTeam="onCreateTeam">
+                    </team-management>
                 </b-tab>
+
+
                 <b-tab title="Contrats" >
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="occupation-selector">Utilisateur: </label>
+                                <select @change="onSelectUser" class="form-control" name="user-contract-selector" v-model="selected_user_contract">
+                                    <option :value="null">-- Selectionner un utilisateur --</option>
+                                    <option v-for="user in users" :key="user.id" :value="user">{{user.fname}} {{user.lname}}</option>
+                                </select>
+                            </div>
+
+                            <div v-if="selected_user_contract">
+                                <label for="occupation-selector">Contrat: </label>
+                                <select class="form-control" name="contract-selector" v-model="selected_contract">
+                                    <option :value="null">-- Selectionner un contrat --</option>
+                                    <option v-for="contract in contracts" :key="contract.id" :value="contract">{{contract.motif}}</option>
+                                </select>
+                                <p class="text-center">
+                                    <a v-b-popover.hover="'Creer un contrat'" 
+                                        style="font-size: 24px;" 
+                                        @click="createContract()" 
+                                        class="fas fa-plus-circle btn text-success"></a>
+                                </p>
+                            </div>                        
+                        </div>
+
+                        <div class="col-md-3" v-if="selected_contract">
+                            <div class="form-group">
+                                <label for="contract-motif">Motif: </label>
+                                <input type="text" class="form-control" id="contract-motif" v-model="selected_contract.motif" required/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contract-dstart">Date de début: </label>
+                                <input type="date" class="form-control" id="contract-dstart" v-model="selected_contract.dateStart" required/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contract-dend">Date de fin: </label>
+                                <input type="date" class="form-control" id="contract-dend" v-model="selected_contract.dateEnd" required/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contract-hours-per-week">Heure hebdomadaire: </label>
+                                <input type="number" class="form-control" id="contract-hours-per-week" v-model="selected_contract.hours_per_week" required/>
+                            </div>
+                        </div>
+
+                        <div v-if="selected_contract" class="col-md-6">
+                            <div class="form-group">
+                                <b-btn @click="modifyContract" variant="success">Valider</b-btn>
+                            </div>
+
+                            <div v-for="day in 7" :key="day">
+                                <b-card
+                                    :header="$moment().day(day).format('dddd')">
+                                    <div v-for="hour in 4" :key="hour">
+                                         <div class="form-group">
+                                            <input 
+                                                type="time" 
+                                                class="form-control" 
+                                                v-model="selected_contract.hours[day-1][hour-1]" required/>
+                                        </div>
+                                    </div>
+                                </b-card>
+                                <hr>
+                            </div>
+                            <div class="form-group">
+                                <b-btn @click="modifyContract" variant="success">Valider</b-btn>
+                            </div>
+                        </div>
+                    </div>
+                </b-tab>
+
+
+                <b-tab title="Paramètrage" >
+                    <p class="display-4">Occupations: </p>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="occupation-selector">Occupation: </label>
+                            <select class="form-control" name="occupation-selector" v-model="selected_occupation">
+                                <option :value="null">-- Selectionner une occupation --</option>
+                                <option v-for="occupation in occupations" :key="occupation.id" :value="occupation">{{occupation.name}}</option>
+                            </select>
+                            <p class="text-center">
+                                <a v-b-popover.hover="'Creer une occupation'" 
+                                    style="font-size: 24px;" 
+                                    @click="createOccupation()" 
+                                    class="fas fa-plus-circle btn text-success"></a>
+                            </p>
+                        </div>
+
+                        <div v-if="selected_occupation">
+                            <div class="form-group">
+                                <label for="admin-occupation-name">Nom: </label>
+                                <input type="text" class="form-control" id="admin-occupation-name" v-model="selected_occupation.name" required/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="admin-occupation-effective-hours">Heures comptées: </label>
+                                <input type="number" class="form-control" id="admin-occupation-effective-hours" v-model="selected_occupation.effective_hours_mult" required/>
+                            </div>
+                            <b-btn @click="modifyOccupation" variant="success">Valider</b-btn>
+                        </div>                          
+                    </div>
+                    <hr>
                 </b-tab>
             </b-tabs>
         </b-card>
@@ -115,114 +131,96 @@
 </template>
 
 <script>
-import NavBar from '../layout/NavBar.vue'
-import AdminProjectUser from '../components/ComponentAdminProjectUser.vue'
+import Occupation from '../entities/occupation'
+import Contract from '../entities/contract'
 
-import User from '../entities/user'
-import Project from '../entities/project'
-import UserService from '../services/user.service'
-import ProjectService from '../services/project.service';
+import NavBar from '../layout/NavBar.vue'
+import TeamManagement from '../layout/TeamManagement.vue'
+import UserManagement from '../layout/UserManagement.vue'
+
+import TeamService from '../services/team.service';
+import ContractService from '../services/contract.service';
+import OccupationService from '../services/occupation.service';
+import UserService from '../services/user.service';
 export default {
     components:{
-        NavBar, AdminProjectUser
+        NavBar, TeamManagement, UserManagement
     },
     data(){
         return{
+            teams: [],
+
             users: [],
-            search_user: '',
-            add_user_to_project_selector: null,
-            users_not_in_project: [],
-            user_form:{
-                lname: '',
-                fname: '',
-                email: '',
-                admin: false
-            },
+            contracts: [],
 
-            selected_project: null,
-            search_project: '',
-            projects: [],
-            project_form:{
+            selected_user_contract: null,
+            selected_contract: null,
 
-            }
+            occupations: [],
+            selected_occupation: null
         }
     },
     mounted(){
+        TeamService.getAll(this.setTeams);
         UserService.getAll(this.setUsers);
-        ProjectService.getAll(this.setProjects);
+        OccupationService.getAll(this.setOccupations);
     },
     methods:{
         setUsers(users){
             this.users = users;
         },
-        createUser(){
-            var user = new User(null, this.user_form.lname, this.user_form.fname, this.user_form.email, this.user_form.admin? 0 : 1);
-            UserService.create(this.onCreateUser, user) 
-        },
-        onCreateUser(user){
-            UserService.getAll(this.setUsers);
+        onSelectUser(){
+            ContractService.getContractsForUser(this.setContracts, this.selected_user_contract);
+            this.selected_contract = null;
         },
 
-        setProjects(projects){
-            this.projects = projects;
+        setContracts(contracts){
+            this.contracts = contracts;
         },
-        selectProject(project){
-            this.selected_project = project;
-
-            this.users_not_in_project = this.users.filter(user=>{
-                return this.selected_project.project_users.filter(project_user=>{
-                    return user.id === project_user.user_id;
-                })==0;
-            });
+        createContract(){
+            var contract = new Contract(null, this.selected_user_contract.id, new Date(), new Date(), 'Nouveau contrat', null)
+            ContractService.create(this.onCreateContract, contract)
         },
-        createProject(){
-            var project = new Project(null, 'default-name');
-            ProjectService.create(this.onCreateProject, project);
+        onCreateContract(contract){
+            this.selected_contract = contract;
+            ContractService.getContractsForUser(this.setContracts, this.selected_user_contract);
         },
-        onCreateProject(project){
-            ProjectService.getAll(this.setProjects);
-            this.selected_project = project;
+        modifyContract(){
+            console.log(this.selected_contract);
+            ContractService.modify(this.onModifyContract, this.selected_contract);
         },
-        addUserOnProject(){
-            if(this.selected_project.project_users){
-                this.selected_project.project_users.push({
-                    user_id: this.add_user_to_project_selector.id,
-                    role: 2
-                });
-                this.selectProject(this.selected_project);
-            }
+        onModifyContract(contract){
             
         },
-        modifyProject(project){
-            ProjectService.modify(this.onModifyProject, project);
+
+        setOccupations(occupations){
+            this.occupations = occupations
         },
-        onModifyProject(project){
-            ProjectService.getAll(this.setProjects);
-            this.selected_project = project;
+        createOccupation(){
+            var occupation = new Occupation(null, 'Nouvelle occupation', 0);
+            OccupationService.create(this.onCreateOccupation, occupation);
+        },
+        onCreateOccupation(occupation){
+            OccupationService.getAll(this.setOccupations);
+            this.selected_occupation = occupation
+        },
+        modifyOccupation(){
+            OccupationService.modify(this.onModifyOccupation, this.selected_occupation);
+        },
+        onModifyOccupation(){
+
         },
 
-        removeProject(project){
-            ProjectService.remove(this.onRemoveProject, project);
+        setTeams(teams){
+            this.teams = teams;
         },
-        onRemoveProject(){
-            ProjectService.getAll(this.setProjects);
-            this.selected_project = null;
-        }
+        onCreateTeam(team){
+            TeamService.getAll(this.setTeams);
+        },
     }
     
 }
 </script>
 
 <style>
-    #admin-project-selector{
-        margin-bottom: 20px;
-    }
-
-    .project-user-form-container{
-        margin-bottom: 20px;
-        border: 1px solid lightgray;
-        border-radius: 5px;
-        padding: 20px;
-        background-color: white
-    }
 </style>
