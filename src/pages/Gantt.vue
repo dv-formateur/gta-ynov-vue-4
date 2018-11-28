@@ -1,153 +1,205 @@
 <template>
-  <div class="container-fluid">
+  <div>
     <nav-bar></nav-bar>
-    <div class="row">
-      <div class="col-md-12 col-lg-3 col-xl-2">
-        <!-- FILTERS -->
-        <form>
-          <div class="form-group">
-            <label for="employee-selector">Equipe :</label>
-            <select @change="onSelectTeam()" class="form-control" name="team-selector" id="team-selector" v-model="selected_team">
-              <option v-for="team in user_teams" v-bind:value="team" v-bind:key="team.id">{{team.name}}</option>
-            </select>
-          </div>
-
-          <div v-if="has_right_on_team" id='manager-filter'>
+    <div class="container-fluid page">
+      <div class="row">
+        <div class="col-md-12 col-lg-3 col-xl-2">
+          <!-- FILTERS -->
+          <form>
             <div class="form-group">
-              <label for="employee-selector">Employé(s) :</label>
-              <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
-                <option value="">Tous</option>
-                <option v-for="user in getSelectedTeams().users" v-bind:value="user" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+              <label for="employee-selector">Equipe :</label>
+              <select @change="onSelectTeam()" class="form-control" name="team-selector" id="team-selector" v-model="selected_team">
+                <option v-for="team in user_teams" v-bind:value="team" v-bind:key="team.id">{{team.name}}</option>
               </select>
             </div>
+
+            <div v-if="has_right_on_team" id='manager-filter'>
+              <div class="form-group">
+                <label for="employee-selector">Employé(s) :</label>
+                <select @change="onSelectUser()" class="form-control" name="employee-selector" id="employee-selector" v-model="selected_user">
+                  <option value="">Tous</option>
+                  <option v-for="user in getSelectedTeams().users" v-bind:value="user" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="start-date-selector">Date de debut :</label>
+              <date-picker :config="date_picker_options" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"></date-picker>
+            </div>
+
+            <div class="form-group">
+              <label for="end-date-selector">Date de fin :</label>
+              <date-picker :config="date_picker_options" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"></date-picker>
+            </div>
+          </form>
+          <b-btn class="form-control" variant="info" @click="scaleOn($moment().startOf('month'), $moment().endOf('month'))">Reinitialiser</b-btn>
+
+          <hr>
+
+          <div v-if="has_right_on_team">
+            <p class="text-center"><a v-b-popover.hover="'Creer une tache'" style="font-size: 24px;" @click="createTask" class="fas fa-plus-circle btn text-success"></a></p>
           </div>
 
-          <div class="form-group">
-            <label for="start-date-selector">Date de debut :</label>
-            <date-picker :config="date_picker_options" class="form-control" name="start-date-selector" id="start-date-selector" v-model="selected_start_date"></date-picker>
-          </div>
+          <!-- SELECTED TASK DETAILS -->
+          <transition name="fade">
+            <b-card 
+              bg-variant="light"
+              text-variant="black"
+              :header="selected_task.title"
+              v-if="selected_task">
+              <div class="selected-task">
+                <div v-if="has_right_on_team">
+                  <div class="form-group">
+                    <label for="task-name">Titre:</label>
+                    <b-input type="text" v-model="selected_task.title"></b-input>
+                  </div>
 
-          <div class="form-group">
-            <label for="end-date-selector">Date de fin :</label>
-            <date-picker :config="date_picker_options" class="form-control" name="end-date-selector" id="end-date-selector" v-model="selected_end_date"></date-picker>
-          </div>
-        </form>
-        <b-btn class="form-control" variant="info" @click="scaleOn($moment().startOf('month'), $moment().endOf('month'))">Reinitialiser</b-btn>
+                  <div class="form-group">
+                    <label for="task-start-date-selector">Date de debut :</label>
+                    <date-picker :config="date_picker_options" class="form-control" name="task-start-date-selector" id="task-start-date-selector" v-model="selected_task.date_start"></date-picker>
+                  </div>
 
-        <hr>
+                  <div class="form-group">
+                    <label for="task-end-date-selector">Date de fin :</label>
+                    <date-picker :config="date_picker_options" class="form-control" name="task-end-date-selector" id="task-end-date-selector" v-model="selected_task.date_end"></date-picker>
+                  </div>
 
-        <div v-if="has_right_on_team">
-          <p class="text-center"><a v-b-popover.hover="'Creer une tache'" style="font-size: 24px;" @click="createTask" class="fas fa-plus-circle btn text-success"></a></p>
+                  <label for="employee-selector">Employé :</label>
+                  <select class="form-control" name="employee-selector" id="employee-selector" v-model="selected_task.user_id">
+                    <option v-for="user in getSelectedTeams().users" v-bind:value="user.id" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
+                  </select>
+
+                  <label for="task-team-selector">Groupe :</label>
+                  <select class="form-control" name="task-team-selector" v-model="selected_task.team_id">
+                    <option :value="null">-- Tous --</option>
+                    <option v-for="team in teams.users" v-bind:value="team.id" v-bind:key="team.id">{{team.name}}</option>
+                  </select>
+
+                  <label for="occupation-selector">Occupation :</label>
+                  <select class="form-control" name="occupation-selector" id="occupation-selector" v-model="selected_task.occupation_id">
+                    <option v-for="occupation in occupations" v-bind:value="occupation.id" v-bind:key="occupation.id">{{occupation.name}}</option>
+                  </select>
+
+                  <div class="form-group">
+                    <input type="checkbox" name="task_validated" v-model="selected_task.validated">
+                    <label for="task-validated">Valide</label>
+                  </div>
+
+                  <div class="form-group">
+                    <b-btn v-b-popover.hover="'Valider les changements'" variant="success" @click="editTask()">Valider</b-btn>
+                  </div>
+
+                  <div class="form-group">
+                    <b-btn v-b-popover.hover="'Supprimer la tache'" variant="danger" @click="removeTask()">Supprimer</b-btn>
+                  </div>
+
+                  <div v-if="selected_task.employee_demand.date_end && selected_task.employee_demand.date_start">
+                    <hr>
+                    <div class="form-group">
+                      <p>Demande d'agencement de la tâche : </p>
+                      <p>Debut : {{$moment(selected_task.employee_demand.date_start).format('DD/MM/YYYY HH:mm')}}</p>
+                      <p>Fin : {{$moment(selected_task.employee_demand.date_end).format('DD/MM/YYYY HH:mm')}}</p>
+                      <b-btn 
+                        v-b-popover.hover="'Valider la demande d\'agencement'" 
+                        variant="info"
+                        @click="acceptTaskDemand()">
+                          Valider
+                      </b-btn>
+                    </div>
+                  </div>
+
+                </div>
+                <div v-else>
+                  <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
+                  <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
+                  <hr>
+                  <div class="form-group">
+                    <label for="task-demand-start-date-selector">Demande d'agencement :</label>
+                    <date-picker 
+                      :config="date_picker_options" 
+                      class="form-control" 
+                      name="task-demand-start-date-selector"
+                      v-model="selected_task.employee_demand.date_start">
+                    </date-picker> 
+                  </div>
+
+                  <div class="form-group">
+                    <date-picker 
+                      :config="date_picker_options" 
+                      class="form-control" 
+                      name="task-demand-end-date-selector"
+                      v-model="selected_task.employee_demand.date_end">
+                    </date-picker>
+                  </div>
+
+                  <b-btn v-b-popover.hover="'Valider la demande'" variant="info" @click="editTask()">Valider</b-btn>
+                </div>
+
+              </div>
+            </b-card>
+          </transition>
+
         </div>
 
-        <!-- SELECTED TASK DETAILS -->
-        <transition name="fade">
-          <b-card 
-            bg-variant="light"
-            text-variant="black"
-            :header="selected_task.title"
-            v-if="selected_task">
-            <div class="selected-task">
-              <div v-if="has_right_on_team">
-                <div class="form-group">
-                  <label for="task-name">Titre:</label>
-                  <b-input type="text" v-model="selected_task.title"></b-input>
-                </div>
+        
+        <div class="col">
+          <div id="tasks" class="container-fluid">
+            <!-- TIMELINE -->
+            <div class="col-10 offset-2">
+              <ol id="timeline">
+                <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
+                :key="key.time.toDate().getTime()">
+                  <div class="timeline-info" 
+                    @click="selected_end_date=key.time">
+                    <p class="timeline-text">{{$moment(key.time).format(date_format)}}</p>
+                  </div>
+                  <span class="timeline-point"></span>
+                </li>
 
-                <div class="form-group">
-                  <label for="task-start-date-selector">Date de debut :</label>
-                  <date-picker :config="date_picker_options" class="form-control" name="task-start-date-selector" id="task-start-date-selector" v-model="selected_task.date_start"></date-picker>
-                </div>
-
-                <div class="form-group">
-                  <label for="task-end-date-selector">Date de fin :</label>
-                  <date-picker :config="date_picker_options" class="form-control" name="task-end-date-selector" id="task-end-date-selector" v-model="selected_task.date_end"></date-picker>
-                </div>
-
-                <label for="employee-selector">Employé :</label>
-                <select class="form-control" name="employee-selector" id="employee-selector" v-model="selected_task.user_id">
-                  <option v-for="user in getSelectedTeams().users" v-bind:value="user.id" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
-                </select>
-
-                <label for="occupation-selector">Occupation :</label>
-                <select class="form-control" name="occupation-selector" id="occupation-selector" v-model="selected_task.occupation_id">
-                  <option v-for="occupation in occupations" v-bind:value="occupation.id" v-bind:key="occupation.id">{{occupation.name}}</option>
-                </select>
-
-                <div class="form-group">
-                  <input type="checkbox" name="task_validated" v-model="selected_task.validated">
-                  <label for="task-validated">Valide</label>
-                </div>
-
-                <b-btn v-b-popover.hover="'Valider les changements'" variant="info" @click="editTask()">Valider</b-btn>
-                <b-btn v-b-popover.hover="'Supprimer la tache'" variant="danger" @click="removeTask()">Supprimer</b-btn>
-              </div>
-              <div v-else>
-                <p class="task-info-date-start">{{$moment(selected_task.date_start).format('HH:mm DD/MM/YY')}}</p>
-                <p class="task-info-date-end">{{$moment(selected_task.date_end).format('HH:mm DD/MM/YY')}}</p>
-              </div>
-
+                <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
+                  <span class="timeline-point current-timeline">
+                  </span>
+                </li>
+              </ol>
             </div>
-          </b-card>
-        </transition>
 
-      </div>
+            <!-- TASKS -->
+            <div class="container-fluid user-tasks" v-for="user in getSelectedUsers()" :key="user.id">
+              <router-link class="task-username" :to="'/profile/' + user.id">{{user.fname}} {{user.lname}}</router-link>
+              <div 
+                v-for="task in user.tasklist" 
+                :key="task.id" class="row task-row" 
+                v-if="$moment(task.date_start) < $moment(selected_end_date) 
+                  && $moment(task.date_end) > $moment(selected_start_date)
+                  && (hasRightOnTeam(selected_team, amIAuthentified()) || (task.warnings.length == 0 && task.dangers.length == 0))">
+                  <div class="task-info col-2">
+                    <p class="task-title">{{task.title}} <a class="fas fa-eye text-info btn" @click="scaleToTask(task)"></a></p>
+                    <div class="task-date-info">
+                      <p class="date_start">{{$moment(task.date_start).format('HH:mm DD/MM/YY')}}</p>
+                      <p class="date_end">{{$moment(task.date_end).format('HH:mm DD/MM/YY')}}</p>
+                    </div>
+                    <div v-for="warning in task.warnings" :key="warning">
+                      <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{warning}}</p>
+                    </div>
+                  </div>
 
-      
-      <div class="col">
-        <div id="tasks" class="container-fluid">
-          <!-- TIMELINE -->
-          <div class="col-10 offset-2">
-            <ol id="timeline">
-              <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
-              :key="key.time.toDate().getTime()">
-                <div class="timeline-info" 
-                  @click="selected_end_date=key.time">
-                  <p class="timeline-text">{{$moment(key.time).format(date_format)}}</p>
-                </div>
-                <span class="timeline-point"></span>
-              </li>
+                  <component-task
+                    class="col-10"
+                    :task="task" 
+                    :start_date="selected_start_date" 
+                    :end_date="selected_end_date"
+                    :selected="selected_task? task.id == selected_task.id ? true : false : false"
+                    :date_format="date_format"
 
-              <li v-if="$moment() >= selected_start_date && $moment() <= selected_end_date" :style="{'margin-left': getTimelineKeyMarginLeft($moment())}">
-                <span class="timeline-point current-timeline">
-                </span>
-              </li>
-            </ol>
+                    @selectTask="selectTask">
+                  </component-task>
+          
+              </div>
+            </div> 
           </div>
-
-          <!-- TASKS -->
-          <div class="container-fluid user-tasks" v-for="user in getSelectedUsers()" :key="user.id">
-            <router-link class="task-username" :to="'/profile/' + user.id">{{user.fname}} {{user.lname}}</router-link>
-            <div 
-              v-for="task in user.tasklist" 
-              :key="task.id" class="row task-row" 
-              v-if="$moment(task.date_start) < $moment(selected_end_date) && $moment(task.date_end) > $moment(selected_start_date)">
-                <div class="task-info col-2">
-                  <p class="task-title">{{task.title}} <a class="fas fa-eye text-info btn" @click="scaleToTask(task)"></a></p>
-                  <div class="task-date-info">
-                    <p class="date_start">{{$moment(task.date_start).format('HH:mm DD/MM/YY')}}</p>
-                    <p class="date_end">{{$moment(task.date_end).format('HH:mm DD/MM/YY')}}</p>
-                  </div>
-                  <div v-for="warning in task.warnings" :key="warning">
-                    <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{warning}}</p>
-                  </div>
-                </div>
-
-                <component-task
-                  class="col-10"
-                  :task="task" 
-                  :start_date="selected_start_date" 
-                  :end_date="selected_end_date"
-                  :selected="selected_task? task.id == selected_task.id ? true : false : false"
-                  :date_format="date_format"
-
-                  @selectTask="selectTask">
-                </component-task>
-         
-            </div>
-          </div> 
         </div>
-      </div>              
+      </div>          
     </div>
   </div>
 </template>
@@ -169,7 +221,7 @@ import OccupationService from '../services/occupation.service'
 export default {
   name: 'gantt-view',
   components: {
-    NavBar, ComponentTask
+    NavBar, ComponentTask, DatePicker
   },
   data () {
     return {
@@ -192,10 +244,6 @@ export default {
       },
 
       date_format: 'DD/MM',
-      date_picker_options: {
-        format: 'DD MMM YYYY HH:mm',
-        useCurrent: true,
-      },
 
       occupations: []
     }
@@ -321,6 +369,7 @@ export default {
       if(!task.validated){
         res.push('La tache n\'est pas validee');
       }
+
       task.warnings = res;
     },
     computeTaskDangers(task){
@@ -333,14 +382,14 @@ export default {
       var end = this.selected_end_date;
       var title = 'default-name';
 
-      var task = new Task(0, title, 0, start, end, this.$session.get('user').id, this.selected_team.id, this.has_right_on_team);
-      TaskService.create(this.onCreateTask, task);
+      var task = new Task(0, title, 0, start, end, this.$session.get('user').id, this.selected_team.team_id, this.has_right_on_team);
+      TaskService.create(this.amIAuthentified(), this.onCreateTask, task);
     },
     removeTask(){
-      TaskService.remove(this.onRemoveTask, this.selected_task)
+      TaskService.remove(this.amIAuthentified(), this.onRemoveTask, this.selected_task)
     },
     editTask(){
-      TaskService.modify(this.refreshTasksForSelection, this.selected_task);
+      TaskService.modify(this.amIAuthentified(), this.refreshTasksForSelection, this.selected_task);
     },
 
     onRemoveTask(){
@@ -350,6 +399,14 @@ export default {
     onCreateTask(task){
       this.refreshTasksForSelection();
       this.selected_task = task;
+    },
+    acceptTaskDemand(){
+      this.selected_task.date_start = this.selected_task.employee_demand.date_start;
+      this.selected_task.date_end = this.selected_task.employee_demand.date_end;
+      this.selected_task.employee_demand.date_start = null;
+      this.selected_task.employee_demand.date_end = null;
+      TaskService.modify(this.amIAuthentified(), this.refreshTasksForSelection, this.selected_task);
+
     }
   }
 }
@@ -365,8 +422,6 @@ export default {
   z-index: 7;
 }
 
-#tasks{
-}
 
 .user-tasks{
   margin-bottom: 75px
@@ -490,9 +545,4 @@ export default {
 .current-timeline{
   border-color: red;
 }
-
-.selected-task{
-}
-
-
 </style>

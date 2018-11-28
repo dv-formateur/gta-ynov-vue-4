@@ -10,7 +10,8 @@ export default class TaskService extends DAOService{
         super.getAll(
             tasks =>{
                 tasks = tasks.filter((e)=>{
-                    return team.id == e.team_id && e.user_id == user.id;
+                    console.log(e)
+                    return (team.id == e.team_id || e.team_id == null) && e.user_id == user.id;
                 });
         
                 tasks = tasks.sort((e1, e2)=>{

@@ -70,7 +70,7 @@ export default {
         },
         createUser(){
             var user = new User(null, this.user_form.lname, this.user_form.fname, this.user_form.email, this.user_form.admin? 0 : 1);
-            UserService.create(this.onCreateUser, user) 
+            UserService.create(this.amIAuthentified(), this.onCreateUser, user) 
         },
         onCreateUser(user){
             UserService.getAll(this.setUsers);

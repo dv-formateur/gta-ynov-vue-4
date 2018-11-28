@@ -1,5 +1,5 @@
 <template>
-<div id="navbar" class="row">
+<div id="navbar" class="">
   <b-navbar class="col" toggleable="md" type="dark" variant="info">
 
   <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
@@ -99,7 +99,6 @@ export default {
 
 <style>
 #navbar {
-  margin-bottom: 25px;
 }
 
 #navbar .nav-item .nav-link a a{

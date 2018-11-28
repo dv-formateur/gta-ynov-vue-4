@@ -8,6 +8,10 @@ export default class Task{
         this.user_id = user_id;
         this.team_id = team_id;
         this.validated = validated;
-        this.occupation_id = occupation_id
+        this.occupation_id = occupation_id;
+        this.employee_demand = {
+            date_start : null,
+            date_end : null
+        }
     }
 }

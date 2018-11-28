@@ -1,10 +1,12 @@
 <template>
-    <div class="container-fluid">
+    <div>
         <nav-bar></nav-bar>
-        <team-management 
-            :teams="teams"
-            @onCreateTeam="onCreateTeam">
-        </team-management>
+        <div class="container-fluid page">
+            <team-management 
+                :teams="teams"
+                @onCreateTeam="onCreateTeam">
+            </team-management>
+        </div>
     </div>
 </template>
 

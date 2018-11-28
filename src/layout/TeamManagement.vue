@@ -100,6 +100,7 @@ export default {
     },
     mounted(){
         UserService.getAll(this.setUsers);
+        this.has_right_on_selected_team = this.hasRightOnTeam(this.selected_team, this.$session.get('user'));
     },
     methods: {
         selectTeam(team){
@@ -119,7 +120,7 @@ export default {
         },
         createTeam(){
             var team = new Team(null, 'default-name');
-            TeamService.create(this.onCreateTeam, team);
+            TeamService.create(this.amIAuthentified(), this.onCreateTeam, team);
         },
         onCreateTeam(team){
             this.$emit('onCreateTeam', team);
@@ -136,13 +137,13 @@ export default {
             
         },
         modifyTeam(team){
-            TeamService.modify(this.onModifyTeam, team);
+            TeamService.modify(this.amIAuthentified(), this.onModifyTeam, team);
         },
         onModifyTeam(team){
         },
 
         removeTeam(team){
-            TeamService.remove(this.onRemoveTeam, team);
+            TeamService.remove(this.amIAuthentified(), this.onRemoveTeam, team);
         },
         onRemoveTeam(){
             TeamService.getAll(this.setTeams);

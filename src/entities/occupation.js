@@ -1,4 +1,4 @@
-export default class Ocuppations{
+export default class Ocuppation{
     constructor(id, name, effective_hours_mult){
         this.id = id;
         this.name = name;

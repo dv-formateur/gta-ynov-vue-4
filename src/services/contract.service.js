@@ -7,7 +7,6 @@ export default class ContractService extends DAOService{
     static getContractsForUser(callback, user){
         super.getAll(entities =>{
             entities = entities.filter(e=>{
-                console.log(e)
                 return e.user_id == user.id;
             })
             callback(entities, user);

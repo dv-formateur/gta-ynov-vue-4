@@ -1,13 +1,12 @@
 <template>
     <div id="home-page">
         <div id="bg-image"></div>
-        <div class="container-fluid">
-            <nav-bar></nav-bar>
-
+        <nav-bar></nav-bar>
+        <div class="page">
                 <div class="row">
                     <!-- CAROUSEL -->
                     <div class="col-10 offset-1">
-                        <b-carousel id="carousel1"
+                        <b-carousel id="home-carousel"
                             style="text-shadow: 1px 1px 2px #333;"
                             controls
                             indicators
@@ -56,5 +55,11 @@ export default {
 <style>
 #home-page{
     height: 100%; 
+}
+
+#home-carousel{
+    -webkit-box-shadow: 6px 6px 4px -2px rgba(0,0,0,0.75);
+    -moz-box-shadow: 6px 6px 4px -2px rgba(0,0,0,0.75);
+    box-shadow: 6px 6px 4px -2px rgba(0,0,0,0.75);
 }
 </style>

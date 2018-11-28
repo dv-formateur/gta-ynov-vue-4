@@ -23,7 +23,15 @@ export default {
 <style>
   html, body{
     height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
+
+  .page{
+    padding: 20px;
+  }
+
   .inline-block{
     display: inline-block;
     vertical-align: top;

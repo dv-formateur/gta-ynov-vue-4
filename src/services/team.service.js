@@ -6,9 +6,9 @@ export default class TeamService extends DAOService{
         return 'teams';
     }
 
-    static modify(callback, entity){
+    static modify(user, callback, entity){
         entity.users = [];
-        super.modify(callback, entity);
+        super.modify(user, callback, entity);
     }
 
     static getUserTeams(callback, user, isAdmin = false){

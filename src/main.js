@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import datePicker from 'vue-bootstrap-datetimepicker';
 import BootstrapVue from "bootstrap-vue"
 import MomentVue from "vue-moment"
 import VueSession from 'vue-session'
@@ -28,7 +27,6 @@ Vue.use(VueRouter)
 Vue.use(VueSession)
 Vue.use(BootstrapVue)
 Vue.use(MomentVue)
-Vue.use(datePicker)
 
 Vue.moment.locale('fr', {
   week: {
@@ -132,6 +130,7 @@ localStorage.setItem('users',JSON.stringify(
   new User(6, 'user6', 'user6','test5@gmail.com', 1)]
 ));
 
+localStorage.setItem('logs', JSON.stringify([]));
 
 localStorage.setItem('teams', JSON.stringify( 
 [
@@ -141,9 +140,14 @@ localStorage.setItem('teams', JSON.stringify(
       role: 1
   }, 
   {
-      user_id : 3,
+      user_id : 2,
       role: 2
-  }]),
+  },
+  {
+    user_id : 3,
+    role: 2
+  }
+  ]),
   new Team (2, 'prj2', [
   {
       user_id : 1,
@@ -161,21 +165,21 @@ localStorage.setItem('teams', JSON.stringify(
   new Team (3, 'prj3', [
   {
       user_id : 1,
-      role: 2
+      role: 1
   }, 
   {
       user_id : 2,
-      role: 1
+      role: 2
   }]),
 ]
 ));
 
 localStorage.setItem('tasks', JSON.stringify(
 [
-  new Task(1, 'task1-1-1', 0, new Date('2018-11-1'), new Date('2018-11-20'), 1, 1, false),
-  new Task(2, 'task2-1-1', 1, new Date('2018-11-4'), new Date('2018-11-5'), 1, 1, true),
-  new Task(3, 'task3-1-1', 2, new Date('2018-11-8'), new Date('2018-11-15'), 1, 1, true),
-  new Task(4, 'task4-1-1', 3, new Date('2018-11-2'), new Date('2018-11-10'), 1, 1, false)
+  new Task(1, 'task1-1-1', 0, new Date('2018-11-1'), new Date('2018-11-20'), 2, 1, false),
+  new Task(2, 'task2-1-1', 1, new Date('2018-11-4'), new Date('2018-11-5'), 2, 2, true),
+  new Task(3, 'task3-1-1', 2, new Date('2018-11-8'), new Date('2018-11-15'), 3, 1, true),
+  new Task(4, 'task4-1-1', 3, new Date('2018-11-2'), new Date('2018-11-10'), 3, 1, false)
 ]
 ));
 
@@ -235,6 +239,11 @@ Vue.prototype.getRoleString = function(n){
 
   return res;
 }
+
+Vue.prototype.date_picker_options= {
+  format: 'DD MMM YYYY HH:mm',
+  useCurrent: true,
+};
 
 new Vue({
   el: '#app',

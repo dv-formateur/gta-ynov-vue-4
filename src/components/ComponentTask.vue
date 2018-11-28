@@ -7,7 +7,7 @@
       :value="getValue()"
       :variant="getTaskColor()"
       striped
-      height="30px"
+      height="20px"
       :animated="selected">
     </b-progress>
   </div>
@@ -84,6 +84,7 @@ export default {
       var res = "info";
       if(this.$moment(this.task.date_end) <= this.$moment()) res = "success";
       if(this.task.occupation.effective_hours_mult == 0) res = "secondary";
+      if(this.task.employee_demand.date_start || this.task.employee_demand.date_start) res = "primary";
       if(this.task.warnings.length > 0) res = 'warning';
       if(this.task.dangers.length > 0) res = 'danger';
 

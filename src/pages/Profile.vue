@@ -1,12 +1,10 @@
 <template>
-    <div class="container-fluid">
-        <div id="bg-image"></div>
+    <div>
         <nav-bar></nav-bar>
-        <b-card no-body bg-variant="light" v-if="user" id="account-tabs-card" class="col-md-12 col-xl-4">
-            <b-tabs card>
-                <b-tab title="Compte" class="account-tab" active>
+        <div>
+            <b-tabs card v-if="user">
+                <b-tab title="Compte" class="account-tab col-md-4" active>
                     
-
                     <!-- user info -->
                     <div v-if="$session.get('user') && hasRightOnUser($session.get('user'), user)">
                         <b-form>
@@ -58,14 +56,14 @@
                     </div>
 
                 </b-tab>
-                <b-tab title="Equipes" >
+                <b-tab title="Equipes" class="col-md-4">
                     <div v-for="team in teams" :key="team.id" class="profile-team-row">
                         <p><span class="profile-team-name">{{team.name}}</span> - {{getRoleString(getRole(team))}}</p>
                     </div>
                 </b-tab>
 
 
-                <b-tab v-if="user && hasRightOnUser(amIAuthentified(), user)" title="Contrats" >
+                <b-tab v-if="user && hasRightOnUser(amIAuthentified(), user)" title="Contrats" class="col-md-4">
                     <div class="form-group">
                         <label for="occupation-selector">Contrat: </label>
                         <select class="form-control" name="contract-selector" v-model="selected_contract">
@@ -89,12 +87,9 @@
                         <div v-for="day in 7" :key="day">
                             <b-card
                                 :header="$moment().day(day).format('dddd')">
-                                <div v-for="hour in 4" :key="hour">
+                                <div v-for="hour in 2" :key="hour">
                                         <div class="form-group">
-                                        <input 
-                                            type="time" 
-                                            class="form-control" 
-                                            v-model="selected_contract.hours[day-1][hour-1]" required/>
+                                        <p><span class="font-weight-light">{{selected_contract.hours[day-1][(hour-1)*2]}} - {{selected_contract.hours[day-1][(hour-1)*2+1]}}</span></p>
                                     </div>
                                 </div>
                             </b-card>
@@ -102,8 +97,34 @@
                         </div>
                     </div>
                 </b-tab>
+
+                <b-tab title="Demandes">
+                        <form class="col-md-4">
+                            <div class="form-group">
+                                <label for="task-name">Titre:</label>
+                                <b-input type="text" v-model="input.task.title"></b-input>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="task-start-date-selector">Date de debut :</label>
+                                <b-input type="date" :config="date_picker_options" class="form-control" name="task-start-date-selector" v-model="input.task.date_start"></b-input>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="task-end-date-selector">Date de fin :</label>
+                                <b-input type="date" :config="date_picker_options" class="form-control" name="task-end-date-selector" v-model="input.task.date_end"></b-input>
+                            </div>
+
+                            <label for="occupation-selector">Occupation :</label>
+                            <select class="form-control" name="occupation-selector" id="occupation-selector" v-model="input.task.occupation_id">
+                                <option :value="null">-- Selectionner une occupation --</option>
+                                <option v-for="occupation in occupations" v-bind:value="occupation.id" v-bind:key="occupation.id">{{occupation.name}}</option>
+                            </select>
+                        </form>
+                </b-tab>
+
             </b-tabs>
-        </b-card>
+        </div>
     </div>
 </template>
 
@@ -111,15 +132,18 @@
 import UserService from '../services/user.service'
 import TeamService from '../services/team.service'
 import ContractService from '../services/contract.service'
+import TaskService from '../services/task.service'
+import OccupationService from '../services/occupation.service'
 
 import Team from '../entities/user'
 
 import NavBar from "../layout/NavBar.vue";
+import DatePicker from 'vue-bootstrap-datetimepicker';
 
 export default {
     name: 'profile',
     components: {
-        NavBar
+        NavBar, DatePicker
     },
     data(){
         return {
@@ -129,6 +153,16 @@ export default {
             contracts: [],
             selected_contract: null,
 
+            occupations: [],
+            input:{
+                task:{
+                    title:'',
+                    date_start: null,
+                    date_end: null,
+                    occupation_id: null
+                }
+            },
+
             Team: Team
         }
     },
@@ -137,14 +171,16 @@ export default {
             this.user = user;
             TeamService.getUserTeams(this.setTeams, user);
         },
+        modifyUser(){
+            UserService.modify(this.amIAuthentified(), this.setUser, this.user);
+        },
+
         setContracts(contracts){
             this.contracts = contracts
         },
+
         setTeams(user, teams){
             this.teams = teams;
-        },
-        modifyUser(){
-            UserService.modify(this.setUser, this.user);
         },
         getRole(team){
             var res = 2;
@@ -156,11 +192,16 @@ export default {
                 }
             }
             return res;
+        },
+
+        setOccupations(occupations){
+            this.occupations = occupations;
         }
     },
     mounted(){
         UserService.getUserById(this.setUser, this.$route.params.user_id);
         ContractService.getContractsForUser(this.setContracts, this.user);
+        OccupationService.getAll(this.setOccupations);
     }
 }
 </script>
