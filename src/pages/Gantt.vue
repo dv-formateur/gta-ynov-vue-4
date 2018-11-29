@@ -67,13 +67,14 @@
 
                   <label for="employee-selector">Employé :</label>
                   <select class="form-control" name="employee-selector" id="employee-selector" v-model="selected_task.user_id">
+                    <option :value="null">-- Tous --</option>
                     <option v-for="user in getSelectedTeams().users" v-bind:value="user.id" v-bind:key="user.id">{{user.fname}} {{user.lname}}</option>
                   </select>
 
                   <label for="task-team-selector">Groupe :</label>
                   <select class="form-control" name="task-team-selector" v-model="selected_task.team_id">
                     <option :value="null">-- Tous --</option>
-                    <option v-for="team in teams.users" v-bind:value="team.id" v-bind:key="team.id">{{team.name}}</option>
+                    <option :value="selected_team.id">{{selected_team.name}}</option>
                   </select>
 
                   <label for="occupation-selector">Occupation :</label>
@@ -146,7 +147,7 @@
         <div class="col">
           <div id="tasks" class="container-fluid">
             <!-- TIMELINE -->
-            <div class="col-10 offset-2">
+            <div class="col-8 offset-4 col-lg-10 offset-lg-2">
               <ol id="timeline">
                 <li v-for="key in getTimelineKeys()" :style="{'margin-left': getTimelineKeyMarginLeft(key.time)}"
                 :key="key.time.toDate().getTime()">
@@ -170,28 +171,57 @@
               <div 
                 v-for="task in user.tasklist" 
                 :key="task.id" class="row task-row" 
-                v-if="$moment(task.date_start) < $moment(selected_end_date) 
-                  && $moment(task.date_end) > $moment(selected_start_date)
-                  && (hasRightOnTeam(selected_team, amIAuthentified()) || (task.warnings.length == 0 && task.dangers.length == 0))">
-                  <div class="task-info col-2">
-                    <p class="task-title">{{task.title}} <a class="fas fa-eye text-info btn" @click="scaleToTask(task)"></a></p>
-                    <div class="task-date-info">
-                      <p class="date_start">{{$moment(task.date_start).format('HH:mm DD/MM/YY')}}</p>
-                      <p class="date_end">{{$moment(task.date_end).format('HH:mm DD/MM/YY')}}</p>
-                    </div>
-                    <div v-for="warning in task.warnings" :key="warning">
-                      <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{warning}}</p>
-                    </div>
+                v-if="
+                    (hasRightOnTeam(selected_team, amIAuthentified()) 
+                    && (task.warnings.length > 0 || task.dangers.length > 0))
+                  || ($moment(task.date_start) < $moment(selected_end_date) 
+                    && $moment(task.date_end) > $moment(selected_start_date)
+                    && task.warnings.length == 0 
+                    && task.dangers.length == 0)">
+                  <div class="task-info col-4 col-lg-2">
+                    <p 
+                      class="task-title"
+                      @click="show_collapse[task.id + '-' + user.id] = !show_collapse[task.id + '-' + user.id]"
+                      :aria-controls="task.id + '-' + user.id"
+                      :aria-expanded="!!show_collapse[task.id + '-' + user.id]">
+                      <span v-if="!!show_collapse[task.id + '-' + user.id]" class="fa fa-minus"></span>
+                      <span v-else class="fa fa-plus"></span>
+                      {{task.title}}
+                    </p>
+
+                    <b-collapse v-model="show_collapse[task.id + '-' + user.id]" :id="task.id + '-' + user.id">
+                      <hr>
+                      <p>
+                        <a class="fas fa-search text-info btn" @click="scaleToTask(task)"></a>
+                        <a class="fas fa-file-alt text-info btn" @click="selectTask(task)"></a>
+                        <a v-if="has_right_on_team" class="fas fa-trash text-danger btn" @click="removeTask(task)"></a>
+                      </p>
+                      <hr>
+                      <div class="task-occupation-info">
+                        <p>{{task.occupation.name}}</p>
+                      </div>
+                      <div class="task-date-info">
+                        <p class="date_start">{{$moment(task.date_start).format('DD/MM/YY - HH:mm')}}</p>
+                        <p class="date_end">{{$moment(task.date_end).format('DD/MM/YY - HH:mm')}}</p>
+                      </div>
+                      <hr>
+                      <div v-for="danger in task.dangers" :key="danger">
+                        <p class="text-danger"><i class="fas fa-exclamation-circle"></i> {{danger}}</p>
+                      </div>
+                      <div v-for="warning in task.warnings" :key="warning">
+                        <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> {{warning}}</p>
+                      </div>
+                    </b-collapse>
                   </div>
 
                   <component-task
-                    class="col-10"
+                    class="col-8 col-lg-10"
                     :task="task" 
                     :start_date="selected_start_date" 
                     :end_date="selected_end_date"
                     :selected="selected_task? task.id == selected_task.id ? true : false : false"
                     :date_format="date_format"
-
+                    v-if="task.dangers.length == 0"
                     @selectTask="selectTask">
                   </component-task>
           
@@ -244,6 +274,7 @@ export default {
       },
 
       date_format: 'DD/MM',
+      show_collapse: [],
 
       occupations: []
     }
@@ -276,12 +307,14 @@ export default {
       this.onSelectUser();
     },
     setTasks(user, tasklist){
-      user.tasklist = tasklist;
-      for(var task of tasklist){
+      user.tasklist = tasklist.map(task=>{
+        task.date_start = this.$moment(task.date_start);
+        task.date_end = this.$moment(task.date_end);
         this.computeTaskWarnings(task);
         this.computeTaskDangers(task);
         OccupationService.getTaskOccupation(this.setTaskOcuppation, task);
-      }
+        return task;
+      });
     },
     setTaskOcuppation(task, occupation){
       task.occupation = occupation;
@@ -305,6 +338,7 @@ export default {
     },
     scaleToTask(task){
       this.scaleOn(task.date_start, task.date_end);
+      this.selectTask(task);
     },
     scaleOn(start, end){
       this.selected_start_date = this.$moment(start);
@@ -340,7 +374,7 @@ export default {
       var res = [];
 
       var nbKeyTime = stamp_end.diff(stamp_start, stamp_format, true);
-      var incr = nbKeyTime > 6 ? 3 : 1;
+      var incr = nbKeyTime > 5 ? 3 : 1;
 
       for(var i = 0; i <= nbKeyTime; i+=incr){
         var timeline = this.$moment(stamp_start);
@@ -366,27 +400,26 @@ export default {
     },
     computeTaskWarnings(task){
       var res = [];
-      if(!task.validated){
-        res.push('La tache n\'est pas validee');
-      }
-
+      if(!task.validated)res.push('La tache n\'est pas validee');
       task.warnings = res;
     },
     computeTaskDangers(task){
-      task.dangers = [];
+      var res = [];
+      if(!task.date_end || !task.date_start || task.date_start == '' || task.date_end == '' || !task.date_start._isValid || !task.date_end._isValid) res.push('La date de fin et/ou la date de debut n\'est pas definie');
+      if(task.date_start >= task.date_end) res.push('La date de fin doit etre apres la date de debut');
+      task.dangers = res;
     },
 
     createTask(){
-      var user = this.getSelectedUsers()[0];
       var start = this.selected_start_date;
       var end = this.selected_end_date;
       var title = 'default-name';
 
-      var task = new Task(0, title, 0, start, end, this.$session.get('user').id, this.selected_team.team_id, this.has_right_on_team);
+      var task = new Task(0, title, start, end, null, null, false);
       TaskService.create(this.amIAuthentified(), this.onCreateTask, task);
     },
-    removeTask(){
-      TaskService.remove(this.amIAuthentified(), this.onRemoveTask, this.selected_task)
+    removeTask(task = this.selected_task){
+      TaskService.remove(this.amIAuthentified(), this.onRemoveTask, task)
     },
     editTask(){
       TaskService.modify(this.amIAuthentified(), this.refreshTasksForSelection, this.selected_task);
@@ -437,18 +470,22 @@ export default {
 
 .task-title{
   line-height: 20px;
-  font-size: .75em;
-  margin: 0;  
+  font-size: .90em;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
 }
 
 .task-info{
-  border-left: 1px solid lightgray;
+  border-left: 2px solid lightgray;
+  
 }
 
-.task-date-info{
-  font-size: .5em;
-  padding: 0px 10px;
-  margin: 0;
+.task-date-info, .task-occupation-info{
+  font-size: .75em;
+  padding: 0px 0px;
+  margin: 10px 0px;
 }
 
 .task-date-info p{

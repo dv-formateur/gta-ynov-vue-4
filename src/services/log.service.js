@@ -5,7 +5,7 @@ export default class LogService{
 
     static getAll(callback){
         var res = JSON.parse(localStorage.getItem(this.getTableName()));
-        callback(res.reverse());
+        callback(res);
     }
 
     static create(callback, entity){

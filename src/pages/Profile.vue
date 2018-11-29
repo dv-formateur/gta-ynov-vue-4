@@ -35,9 +35,10 @@
                                 <label for="form-profile-user-phone">Téléphone: </label>
                                 <input type="text" class="form-control" id="form-profile-user-phone" v-model="user.phone"/>
                             </div>
+                            <div class="form-group">
+                                <b-btn @click="modifyUser" variant="success">Valider</b-btn>
+                            </div>
                         </b-form>
-
-                        <b-btn @click="modifyUser" variant="success">Valider</b-btn>
                     </div>
 
                     <div v-else>
@@ -75,11 +76,26 @@
                     <hr>
 
                     <div v-if="selected_contract">
-                        <div>
+                        <div v-if="!amIAdmin()">
                             <p>Motif: <span class="font-weight-light">{{selected_contract.motif}}</span></p>
                             <p>Date de début: <span class="font-weight-light">{{$moment(selected_contract.dateStart).format('DD-MM-YYYY')}}</span></p>
                             <p>Date de fin: <span class="font-weight-light">{{$moment(selected_contract.dateEnd).format('DD-MM-YYYY')}}</span></p>
+                        </div>
 
+                        <div v-else>
+                            <div class="form-group">
+                                <input class="form-control" type="text" placeholder="Motif" v-model="selected_contract.motif"/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="start-date-selector">Date de debut :</label>
+                                <date-picker :config="date_picker_options" class="form-control" name="start-date-selector" v-model="selected_contract.dateStart"></date-picker>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="start-date-selector">Date de debut :</label>
+                                <date-picker :config="date_picker_options" class="form-control" name="start-date-selector" v-model="selected_contract.dateEnd"></date-picker>
+                            </div>
                         </div>
 
                         <hr>
@@ -88,17 +104,22 @@
                             <b-card
                                 :header="$moment().day(day).format('dddd')">
                                 <div v-for="hour in 2" :key="hour">
-                                        <div class="form-group">
-                                        <p><span class="font-weight-light">{{selected_contract.hours[day-1][(hour-1)*2]}} - {{selected_contract.hours[day-1][(hour-1)*2+1]}}</span></p>
+                                    <div v-if="amIAdmin()" class="form-group">
+                                        <input class="form-control" type="time" v-model="selected_contract.hours[day-1][(hour-1)*2]"/>
                                     </div>
+                                    <p v-else><span class="font-weight-light">{{selected_contract.hours[day-1][(hour-1)*2]}} - {{selected_contract.hours[day-1][(hour-1)*2+1]}}</span></p>
                                 </div>
                             </b-card>
                             <hr>
                         </div>
+
+                        <div class="form-group" v-if="amIAdmin()">
+                            <b-btn @click="modifyContract" variant="success">Valider</b-btn>
+                        </div>
                     </div>
                 </b-tab>
 
-                <b-tab title="Demandes">
+                <b-tab v-if="$session.get('user').id == user.id" title="Demandes">
                         <form class="col-md-4">
                             <div class="form-group">
                                 <label for="task-name">Titre:</label>
@@ -114,12 +135,18 @@
                                 <label for="task-end-date-selector">Date de fin :</label>
                                 <b-input type="date" :config="date_picker_options" class="form-control" name="task-end-date-selector" v-model="input.task.date_end"></b-input>
                             </div>
+                            
+                            <div class="form-group">
+                                <label for="occupation-selector">Occupation :</label>
+                                <select class="form-control" name="occupation-selector" id="occupation-selector" v-model="input.task.occupation_id">
+                                    <option :value="null">-- Selectionner une occupation --</option>
+                                    <option v-for="occupation in occupations" v-bind:value="occupation.id" v-bind:key="occupation.id">{{occupation.name}}</option>
+                                </select>
+                            </div>
 
-                            <label for="occupation-selector">Occupation :</label>
-                            <select class="form-control" name="occupation-selector" id="occupation-selector" v-model="input.task.occupation_id">
-                                <option :value="null">-- Selectionner une occupation --</option>
-                                <option v-for="occupation in occupations" v-bind:value="occupation.id" v-bind:key="occupation.id">{{occupation.name}}</option>
-                            </select>
+                            <div class="form-group">
+                                <b-btn @click="createDemand" variant="success">Valider</b-btn>
+                            </div>
                         </form>
                 </b-tab>
 
@@ -135,7 +162,8 @@ import ContractService from '../services/contract.service'
 import TaskService from '../services/task.service'
 import OccupationService from '../services/occupation.service'
 
-import Team from '../entities/user'
+import Team from '../entities/team'
+import Task from '../entities/task'
 
 import NavBar from "../layout/NavBar.vue";
 import DatePicker from 'vue-bootstrap-datetimepicker';
@@ -157,8 +185,8 @@ export default {
             input:{
                 task:{
                     title:'',
-                    date_start: null,
-                    date_end: null,
+                    date_start: this.$moment().startOf('month'),
+                    date_end: this.$moment().endOf('month'),
                     occupation_id: null
                 }
             },
@@ -176,7 +204,11 @@ export default {
         },
 
         setContracts(contracts){
-            this.contracts = contracts
+            this.contracts = contracts.map(contract=>{
+                contract.dateStart = this.$moment(contract.dateStart);
+                contract.dateEnd = this.$moment(contract.dateEnd);
+                return contract;
+            })
         },
 
         setTeams(user, teams){
@@ -196,6 +228,17 @@ export default {
 
         setOccupations(occupations){
             this.occupations = occupations;
+        },
+
+        createDemand(){
+            var task = new Task(null, this.input.task.title, this.input.task.date_start, this.input.task.date_end, this.user.id, null, false, this.input.task.occupation_id);
+            TaskService.create(this.amIAuthentified(), this.onCreateDemand, task);
+        },
+        onCreateDemand(){
+            this.input.task.title = '';
+            this.input.task.date_start =  this.$moment().startOf('month');
+            this.input.task.date_end = this.$moment().endOf('month');
+            this.input.task.occupation_id = null;
         }
     },
     mounted(){

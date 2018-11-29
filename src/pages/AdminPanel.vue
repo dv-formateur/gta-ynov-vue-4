@@ -11,7 +11,8 @@
             <b-tab title="Equipes" >
                 <team-management 
                     :teams="teams"
-                    @onCreateTeam="onCreateTeam">
+                    @onCreateTeam="onCreateTeam"
+                    @onRemoveTeam="onRemoveTeam">
                 </team-management>
             </b-tab>
 
@@ -50,12 +51,12 @@
 
                         <div class="form-group">
                             <label for="contract-dstart">Date de début: </label>
-                            <input type="date" class="form-control" id="contract-dstart" v-model="selected_contract.dateStart" required/>
+                            <date-picker :config="date_picker_options" class="form-control" name="contract-dstart" v-model="selected_contract.dateStart" required></date-picker>
                         </div>
 
                         <div class="form-group">
                             <label for="contract-dend">Date de fin: </label>
-                            <input type="date" class="form-control" id="contract-dend" v-model="selected_contract.dateEnd" required/>
+                            <date-picker :config="date_picker_options" class="form-control" name="contract-dend" v-model="selected_contract.dateEnd" required></date-picker>
                         </div>
 
                         <div class="form-group">
@@ -125,7 +126,10 @@
             </b-tab>
 
             <b-tab title="Logs">
-                <table class="table table-stiped">
+                <div class="form-group">
+                    <b-btn variant="info" @click="refreshLogs">Rafraichir</b-btn>
+                </div>
+                <table class="table table-stiped table-responsive-sm">
                     <thead>
                         <th>Utilisateur</th>
                         <th>Date</th>
@@ -156,15 +160,17 @@ import Contract from '../entities/contract'
 import NavBar from '../layout/NavBar.vue'
 import TeamManagement from '../layout/TeamManagement.vue'
 import UserManagement from '../layout/UserManagement.vue'
+import DatePicker from 'vue-bootstrap-datetimepicker'
 
 import TeamService from '../services/team.service';
 import LogService from '../services/log.service';
 import ContractService from '../services/contract.service';
 import OccupationService from '../services/occupation.service';
 import UserService from '../services/user.service';
+import contract from '../entities/contract';
 export default {
     components:{
-        NavBar, TeamManagement, UserManagement
+        NavBar, TeamManagement, UserManagement, DatePicker
     },
     data(){
         return{
@@ -189,7 +195,10 @@ export default {
     },
     methods:{
         setLogs(logs){
-            this.logs = logs;
+            this.logs = logs.reverse();
+        },
+        refreshLogs(){
+            LogService.getAll(this.setLogs);
         },
 
         setUsers(users){
@@ -201,7 +210,11 @@ export default {
         },
 
         setContracts(contracts){
-            this.contracts = contracts;
+            this.contracts = contracts.map(contract=>{
+                contract.dateStart = this.$moment(contract.dateStart);
+                contract.dateEnd = this.$moment(contract.dateEnd);
+                return contract;
+            });
         },
         createContract(){
             var contract = new Contract(null, this.selected_user_contract.id, new Date(), new Date(), 'Nouveau contrat', null)
@@ -226,7 +239,7 @@ export default {
             OccupationService.create(this.amIAuthentified(), this.onCreateOccupation, occupation);
         },
         onCreateOccupation(occupation){
-            OccupationService.getAll(this.setOccupations);
+            this.occupations.push(occupation);
             this.selected_occupation = occupation
         },
         modifyOccupation(){
@@ -240,8 +253,11 @@ export default {
             this.teams = teams;
         },
         onCreateTeam(team){
-            TeamService.getAll(this.setTeams);
+            this.teams.push(team);
         },
+        onRemoveTeam(){
+            TeamService.getAll(this.setTeams);
+        }
     }
     
 }

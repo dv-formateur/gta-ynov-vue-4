@@ -82,13 +82,13 @@ export default {
     login(user){
       this.$session.set('user', user);
       this.$refs.loginPopin.hide();
-      this.$router.push('/');
-      this.$router.go('/');
+      this.$router.push('/home');
+      this.$forceUpdate();
     },
     logout(){
       this.$session.destroy();
-      this.$router.push('/');
-      this.$router.go('/');
+      this.$router.push('/home');
+      this.$forceUpdate();
     },
     showLogin(){
       this.$refs.loginPopin.show();

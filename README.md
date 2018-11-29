@@ -3,20 +3,23 @@
 # Test url
 > https://raphaelcharre.github.io/
 
-Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs (sans mot de passe) :
-- raphael-charre@hotmail.fr
-- test@gmail.com
-- test2@gmail.com
+Pas de back end, pour se connecter il est possible d'utiliser ces utilisateurs  :
+- admin@ynov.com / admin
+- user1@ynov.com / user1
+- user2@ynov.com / user2
+- user3@ynov.com / user3
+- user4@ynov.com / user4
+- user5@ynov.com / user5
 
 L'application ne possede pas de backend et n'est donc pas sécurisée.
 
 # TODO
-- Contract management
 - Compute users bilan
-- Finish profiles
-- Take screenshot for the carousel
 
-# Changelog 23-11-20018
+# Changelog 29-11-2018
+- many things since last time, look at commits u noob.
+
+# Changelog 23-11-2018
 - User management
 - Full Team management
 

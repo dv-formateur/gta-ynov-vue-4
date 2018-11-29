@@ -15,16 +15,24 @@
                             img-height="480"
                             :interval="4000">
 
-                            <!-- Text slides with image -->
                             <b-carousel-slide
                                                 text="Gerez vos taches avec la vue gantt."
                                                 :img-src="require('../img/diapo1.jpg')"
                             ></b-carousel-slide>
 
-                            <!-- Text slides with image -->
                             <b-carousel-slide
-                                                text="Gerez vos utilsateurs."
+                                                text="Gerez vos groupes."
                                                 :img-src="require('../img/diapo2.jpg')"
+                            ></b-carousel-slide>
+
+                            <b-carousel-slide
+                                                text="Accedez aux logs."
+                                                :img-src="require('../img/diapo3.jpg')"
+                            ></b-carousel-slide>
+
+                            <b-carousel-slide
+                                                text="Les utilisateurs visualisent leur planning."
+                                                :img-src="require('../img/diapo4.jpg')"
                             ></b-carousel-slide>
                         </b-carousel>
                     </div>

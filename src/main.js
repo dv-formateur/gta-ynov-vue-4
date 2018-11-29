@@ -122,12 +122,12 @@ jQuery.extend(true, jQuery.fn.datetimepicker.defaults, {
 
 //Data
 localStorage.setItem('users',JSON.stringify(
-  [new User(1, 'admin', 'admin', 'raphael-charre@hotmail.fr', 0),
-  new User(2, 'user2', 'user2', 'test@gmail.com', 1),
-  new User(3, 'user3', 'user3', 'test2@gmail.com', 1),
-  new User(4, 'user4', 'user4', 'test3@gmail.com', 1),
-  new User(5, 'user5', 'user5','test4@gmail.com', 1),
-  new User(6, 'user6', 'user6','test5@gmail.com', 1)]
+  [new User(1, 'admin', 'admin', 'admin@ynov.com', 'admin', 0),
+  new User(2, 'Carlos', 'Frey', 'user1@ynov.com', 'user1', 1),
+  new User(3, 'David', 'Castaneda', 'user2@ynov.com', 'user2', 1),
+  new User(4, 'Elaine', 'Newman', 'user3@ynov.com', 'user3', 1),
+  new User(5, 'Helen', 'Walton','user4@ynov.com', 'user4', 1),
+  new User(6, 'William', 'Schell','user5@ynov.com', 'user5', 1)]
 ));
 
 localStorage.setItem('logs', JSON.stringify([]));
@@ -176,10 +176,10 @@ localStorage.setItem('teams', JSON.stringify(
 
 localStorage.setItem('tasks', JSON.stringify(
 [
-  new Task(1, 'task1-1-1', 0, new Date('2018-11-1'), new Date('2018-11-20'), 2, 1, false),
-  new Task(2, 'task2-1-1', 1, new Date('2018-11-4'), new Date('2018-11-5'), 2, 2, true),
-  new Task(3, 'task3-1-1', 2, new Date('2018-11-8'), new Date('2018-11-15'), 3, 1, true),
-  new Task(4, 'task4-1-1', 3, new Date('2018-11-2'), new Date('2018-11-10'), 3, 1, false)
+  new Task(1, 'task1-1-1', new Date('2018-11-1'), new Date('2018-11-20'), 2, 1, false),
+  new Task(2, 'task2-1-1', new Date('2018-11-4'), new Date('2018-11-5'), 2, 2, true),
+  new Task(3, 'task3-1-1', new Date('2018-11-8'), new Date('2018-11-15'), 3, 1, true),
+  new Task(4, 'task4-1-1', new Date('2018-11-2'), new Date('2018-11-10'), 3, 1, false)
 ]
 ));
 

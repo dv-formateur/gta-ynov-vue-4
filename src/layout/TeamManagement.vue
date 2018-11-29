@@ -23,8 +23,8 @@
 
         <div class="col" v-if="selected_team">
             <div class="form-group" v-if="has_right_on_selected_team">
-                <b-btn variant="success" v-b-popover.hover="'Valider les changements'" @click="modifyTeam(selected_team)">Valider</b-btn>
-                <b-btn variant="danger" v-b-popover.hover="'Supprimer l\'équipe'" @click="removeTeam(selected_team)">Supprimer</b-btn>
+                <b-btn variant="success" v-b-popover.hover="'Valider les changements'" @click="modifyTeam()">Valider</b-btn>
+                <b-btn variant="danger" v-b-popover.hover="'Supprimer l\'équipe'" @click="removeTeam()">Supprimer</b-btn>
             </div>
 
             <hr>
@@ -124,7 +124,7 @@ export default {
         },
         onCreateTeam(team){
             this.$emit('onCreateTeam', team);
-            this.selected_team = team;
+            this.selectTeam(team);
         },
         addUserOnTeam(){
             if(this.selected_team.team_users){
@@ -136,17 +136,17 @@ export default {
             }
             
         },
-        modifyTeam(team){
-            TeamService.modify(this.amIAuthentified(), this.onModifyTeam, team);
+        modifyTeam(){
+            TeamService.modify(this.amIAuthentified(), this.onModifyTeam, this.selected_team);
         },
         onModifyTeam(team){
         },
 
-        removeTeam(team){
-            TeamService.remove(this.amIAuthentified(), this.onRemoveTeam, team);
+        removeTeam(){
+            TeamService.remove(this.amIAuthentified(), this.onRemoveTeam, this.selected_team);
         },
         onRemoveTeam(){
-            TeamService.getAll(this.setTeams);
+            this.$emit('onRemoveTeam');
             this.selected_team = null;
         }
     }

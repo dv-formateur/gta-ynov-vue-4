@@ -59,7 +59,10 @@ export default class UserService extends DAOService{
   }
 
   static authenticate(callback, email, password){
-    UserService.getUserByEmail(callback, email);
+    UserService.getUserByEmail(user=>{
+      var u = user.password == password ? user : null;
+      callback(u);
+    }, email);
   }
   
 }
